@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "519824354996",
+    "project_id": "newborn-care",
+    "storage_bucket": "newborn-care.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:519824354996:android:9a5ebf8be2a40e09d5b1e1",
+        "android_client_info": {
+          "package_name": "com.example.user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6h5a5gEDAeZglJgOZwAZWFI2PXBIVnRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
