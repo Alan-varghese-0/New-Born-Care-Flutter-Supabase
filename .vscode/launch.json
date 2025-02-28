@@ -1,0 +1,68 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "admin",
+            "cwd": "Projects\\admin",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "admin (profile mode)",
+            "cwd": "Projects\\admin",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "admin (release mode)",
+            "cwd": "Projects\\admin",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "seller",
+            "cwd": "Projects\\seller",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "seller (profile mode)",
+            "cwd": "Projects\\seller",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "seller (release mode)",
+            "cwd": "Projects\\seller",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "user",
+            "cwd": "Projects\\user",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "user (profile mode)",
+            "cwd": "Projects\\user",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "user (release mode)",
+            "cwd": "Projects\\user",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-import 'package:admin/dashboard.dart';
+import 'package:admin/screens/dashboard.dart';
 // import 'package:admin/login.dart';
 import 'package:flutter/material.dart';
 
