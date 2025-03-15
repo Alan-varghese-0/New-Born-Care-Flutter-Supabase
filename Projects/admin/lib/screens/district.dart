@@ -23,12 +23,12 @@ class _DistrictState extends State<District> {
   Future<void> insert() async {
     try {
       setState(() {
-        isLoading=true;
+        isLoading = true;
       });
       await supabase.from("tbl_district").insert({'district_name': _district.text});
       fetchdata();
       _district.clear();
-      print("Instered");
+      print("Inserted");
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Data Inserted Successfully")));
     } catch (e) {
@@ -43,12 +43,12 @@ class _DistrictState extends State<District> {
       final response = await supabase.from("tbl_district").select();
       setState(() {
         fetchdistrict = response;
-        isLoading=false;
+        isLoading = false;
       });
     } catch (e) {
       print("Error $e");
-       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Insert Failed: $e")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Fetch Failed: $e")));
     }
   }
 
@@ -67,114 +67,132 @@ class _DistrictState extends State<District> {
   Future<void> update() async {
     try {
       await supabase.from("tbl_district").update({
-        "district_name":_district.text
+        "district_name": _district.text
       }).eq('id', editId);
       fetchdata();
       _district.clear();
       setState(() {
-        editId=0;
+        editId = 0;
       });
     } catch (e) {
-      print(Text('edit unable $e'));
-      
+      print('Unable to edit $e');
     }
   }
-  
-
 
   @override
   Widget build(BuildContext context) {
-    return
-    isLoading ? Center(child: CircularProgressIndicator(),) :
-     ListView(
-      padding: EdgeInsets.symmetric(
-        vertical: 50,
-        horizontal: 80
-      ),
-      children: [
-        Form(child: Center(
-          child: Row(
+    return isLoading
+        ? Center(child: CircularProgressIndicator())
+        : ListView(
+            padding: EdgeInsets.symmetric(vertical: 50, horizontal: 80),
             children: [
-              // Text("district"),
-              Expanded(
-                child: TextFormField(
-                  style: TextStyle(color: Colors.white),
-                  controller: _district,
-                  decoration: InputDecoration(
-                    // border: OutlineInputBorder(
-                    //   borderRadius: BorderRadius.circular(10)
-                    // ),
-                    label: Text("district"),
-                    labelStyle: TextStyle(color:Colors.white),
-                    hintText: 'please enter the district',
-                    hintStyle: TextStyle(color: Colors.white),
-                    fillColor: const Color.fromARGB(255, 180, 171, 171),
-                    filled: false,
+              Form(
+                child: Center(
+                  child: Row(
+                    children: [
+                      // Text field for district input
+                      Expanded(
+                        child: TextFormField(
+                          style: TextStyle(color: Colors.black), // Dark text for readability
+                          controller: _district,
+                          decoration: InputDecoration(
+                            label: Text(
+                              "District",
+                              style: TextStyle(color: Colors.black),
+                            ),
+                            hintText: 'Please enter the district',
+                            hintStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
+                            filled: true,
+                            fillColor: Color(0xFFF1F0E6), // Soft beige background for input
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.black.withOpacity(0.2)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (editId == 0) {
+                            insert();
+                          } else {
+                            update();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white, backgroundColor: Color(0xFF6DAF7C),
+                        ),
+                        child: Text(
+                          "Submit",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    ],
                   ),
                 ),
               ),
-              ElevatedButton(onPressed: (){
-                if(editId==0){
-                  insert();
-                }
-                else
-                {
-                  update();
-                }
-              }, child: Text("submit",
-              style: TextStyle(color: Colors.black,
-              fontWeight: FontWeight.w100),),
-              )
+              SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white.withOpacity(0.6), // Soft white background with transparency
+                ),
+                margin: EdgeInsets.all(20),
+                padding: EdgeInsets.all(20),
+                child: ListView.separated(
+                  separatorBuilder: (context, index) {
+                    return Divider();
+                  },
+                  shrinkWrap: true,
+                  itemCount: fetchdistrict.length,
+                  itemBuilder: (context, index) {
+                    final district = fetchdistrict[index];
+                    return ListTile(
+                      leading: Text(
+                        district['district_name'],
+                        style: TextStyle(
+                          color: Colors.black, // Dark text for clarity
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      trailing: SizedBox(
+                        width: 80,
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                delete(district['id']);
+                              },
+                              icon: Icon(
+                                Icons.delete,
+                                color: Color(0xFF6DAF7C), // Soft green for delete icon
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _district.text = district['district_name'];
+                                  editId = district['id'];
+                                });
+                              },
+                              icon: Icon(
+                                Icons.edit,
+                                color: Color(0xFF6DAF7C), // Soft green for edit icon
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
-          ),
-        ),
-        
-        ),
-        SizedBox(height: 20,),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-          // ignore: deprecated_member_use
-          color: Colors.white.withOpacity(0.5),
-          ),
-          margin: EdgeInsets.all(20),
-          padding: EdgeInsets.all(20),
-          child: ListView.separated(
-            
-            separatorBuilder: (context, index) {
-              return Divider();
-            },
-              shrinkWrap: true,
-                itemCount: fetchdistrict.length,
-                itemBuilder: (context, index) {
-                final district= fetchdistrict[index];
-                return ListTile(
-                  leading:Text( district['district_name'],
-                  style: TextStyle(color: Colors.black,
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w200,
-                  ),),
-                  trailing: SizedBox(
-                    width: 80,
-                    child: Row(
-                      children: [
-                        IconButton(onPressed: (){
-                          delete(district['id']);
-                        }, icon: Icon(Icons.delete)),
-                        IconButton(onPressed: (){
-                          setState(() {
-                            _district.text = district['district_name'];
-                            editId = district['id'];
-                          });
-                        }, icon: Icon(Icons.edit)),
-                      ],
-                    ),
-                  ),
-                );
-              },),
-              
-        )
-      ],
-    );
+          );
   }
 }

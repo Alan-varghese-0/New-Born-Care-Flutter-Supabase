@@ -1,90 +1,84 @@
 import 'package:admin/main.dart';
 import 'package:flutter/material.dart';
 
-class Subcategorty extends StatefulWidget {
-  const Subcategorty({super.key});
+class Subcategory extends StatefulWidget {
+  const Subcategory({super.key});
 
   @override
-  State<Subcategorty> createState() => _SubcategortyState();
+  State<Subcategory> createState() => _SubcategoryState();
 }
 
-class _SubcategortyState extends State<Subcategorty> {
+class _SubcategoryState extends State<Subcategory> {
   final formkey = GlobalKey<FormState>();
-  final TextEditingController _SubcategortyController = TextEditingController();
+  final TextEditingController _SubcategoryController = TextEditingController();
   List<Map<String, dynamic>> categoryList = [];
-  List<Map<String, dynamic>> SubcategortyList = [];
+  List<Map<String, dynamic>> SubcategoryList = [];
   bool isLoading = false;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    fetchDist();
-    fetchdata();
+    fetchCategories();
+    fetchSubcategories();
   }
 
-  Future<void> fetchDist() async {
+  Future<void> fetchCategories() async {
     try {
-      print("category");
       final response = await supabase.from('tbl_category').select();
-      print(response);
       setState(() {
         categoryList = response;
       });
     } catch (e) {
-      print("Error fetching category: $e");
+      print("Error fetching categories: $e");
     }
   }
 
-  String? selectedcategory;
+  String? selectedCategory;
 
   Future<void> insert() async {
     try {
       await supabase.from("tbl_subcategory").insert({
-        'Subcategorty_name': _SubcategortyController.text,
-        'category_id': selectedcategory
+        'Subcategory_name': _SubcategoryController.text,
+        'category_id': selectedCategory
       });
 
-      print("Data inserted");
-      fetchdata();
-      _SubcategortyController.clear();
-      selectedcategory=null;
+      fetchSubcategories();
+      _SubcategoryController.clear();
+      selectedCategory = null;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Inserted successufully')));
+          .showSnackBar(SnackBar(content: Text('Inserted successfully')));
     } catch (e) {
-      print('Error 1 $e');
+      print('Error inserting: $e');
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error found in insert $e')));
+          .showSnackBar(SnackBar(content: Text('Error inserting: $e')));
     }
   }
 
-  Future<void> fetchdata() async {
+  Future<void> fetchSubcategories() async {
     try {
       setState(() {
         isLoading = true;
       });
       final response = await supabase.from('tbl_subcategory').select();
-
       setState(() {
         isLoading = false;
-        SubcategortyList = response;
+        SubcategoryList = response;
       });
     } catch (e) {
-      print('Error 2 $e');
+      print('Error fetching subcategories: $e');
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Errorooo')));
+          .showSnackBar(SnackBar(content: Text('Error fetching subcategories')));
     }
   }
 
   Future<void> delete(int id) async {
     try {
       await supabase.from("tbl_subcategory").delete().eq('id', id);
-
-      fetchdata();
-
+      fetchSubcategories();
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(' Deleted')));
+          .showSnackBar(SnackBar(content: Text('Deleted successfully')));
     } catch (e) {
-      print('error 3 $e');
+      print('Error deleting: $e');
     }
   }
 
@@ -93,14 +87,15 @@ class _SubcategortyState extends State<Subcategorty> {
     try {
       await supabase
           .from('tbl_subcategory')
-          .update({"Subcategorty_name": _SubcategortyController.text}).eq("id", edit);
-      fetchdata();
-      _SubcategortyController.clear();
+          .update({"Subcategory_name": _SubcategoryController.text})
+          .eq("id", edit);
+      fetchSubcategories();
+      _SubcategoryController.clear();
       setState(() {
         edit = 0;
       });
     } catch (e) {
-      print('error 4 $e');
+      print('Error updating: $e');
     }
   }
 
@@ -109,117 +104,122 @@ class _SubcategortyState extends State<Subcategorty> {
     return ListView(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: 40,
-            vertical: 50,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 50),
           child: Form(
-              key: formkey,
-              child: Center(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField(
-                        dropdownColor: Colors.black,
-                        style: TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('category',
-                              style: TextStyle(color: Colors.white))
-                              ),
-                          value: selectedcategory,
-                          items: categoryList.map((category) {
-                            return DropdownMenuItem(
-                            
-                                value: category['id'].toString(),
-                                child: Text(category['category_name']));
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedcategory = value!;
-                            });
-                          }),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                        child: TextFormField(
-                      controller: _SubcategortyController,
+            key: formkey,
+            child: Center(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField(
+                      dropdownColor: Colors.black,
+                      style: TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        label: Text(' Subcategorty',style: TextStyle(color: Colors.white),),
-                        hintText: "please enter the Subcategorty",
+                        border: OutlineInputBorder(),
+                        label: Text(
+                          'Category',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      value: selectedCategory,
+                      items: categoryList.map((category) {
+                        return DropdownMenuItem(
+                          value: category['id'].toString(),
+                          child: Text(category['category_name']),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCategory = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _SubcategoryController,
+                      decoration: InputDecoration(
+                        label: Text(
+                          'Subcategory',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        hintText: 'Please enter the subcategory',
                         hintStyle: TextStyle(color: Colors.white),
                         border: OutlineInputBorder(),
                       ),
-                    )),
-                    SizedBox(
-                      width: 10,
                     ),
-                    ElevatedButton(
-                        onPressed: () {
-                          if (edit == 0) {
-                            insert();
-                          } else {
-                            update();
-                          }
-                        },
-                        child: Text('Submit',style:TextStyle(color: Colors.black )))
-                  ],
-                ),
-              )),
+                  ),
+                  SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (edit == 0) {
+                        insert();
+                      } else {
+                        update();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Color(0xFF6DAF7C),
+                    ),
+                    child: Text('Submit', style: TextStyle(color: Colors.black)),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        SizedBox(
-          height: 40,
-        ),
+        SizedBox(height: 40),
         isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                color: Colors.white,
-              ))
+            ? Center(child: CircularProgressIndicator(color: Colors.white))
             : Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 50,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 50),
                 child: Container(
-                    color: Colors.white38,
-                    padding: EdgeInsets.all(20),
-                    child: ListView.separated(
-                        separatorBuilder: (context, index) {
-                          return Divider();
-                        },
-                        shrinkWrap: true,
-                        itemCount: SubcategortyList.length,
-                        itemBuilder: (context, index) {
-                          final _Subcategorty = SubcategortyList[index];
-                          return ListTile(
-                              leading: Text(
-                                style: TextStyle(fontSize: 18),
-                                _Subcategorty['Subcategorty_name'],
+                  color: Colors.white38,
+                  padding: EdgeInsets.all(20),
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) {
+                      return Divider();
+                    },
+                    shrinkWrap: true,
+                    itemCount: SubcategoryList.length,
+                    itemBuilder: (context, index) {
+                      final _subcategory = SubcategoryList[index];
+                      return ListTile(
+                        leading: Text(
+                          _subcategory['Subcategory_name'],
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                        ),
+                        trailing: SizedBox(
+                          width: 80,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  delete(_subcategory['id']);
+                                },
+                                icon: Icon(Icons.delete_outline),
+                                color: Color(0xFF6DAF7C), // Soft green delete icon
                               ),
-                              trailing: SizedBox(
-                                width: 80,
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                        onPressed: () {
-                                          delete(_Subcategorty['id']);
-                                        },
-                                        icon: Icon(Icons.delete_outline)),
-                                    IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _SubcategortyController.text =
-                                                _Subcategorty['Subcategorty_name'];
-                                            edit = _Subcategorty['id'];
-                                          });
-                                        },
-                                        icon: Icon(Icons.edit))
-                                  ],
-                                ),
-                              ));
-                        })),
-              )
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _SubcategoryController.text =
+                                        _subcategory['Subcategory_name'];
+                                    edit = _subcategory['id'];
+                                  });
+                                },
+                                icon: Icon(Icons.edit),
+                                color: Color(0xFF6DAF7C), // Soft green edit icon
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
       ],
     );
   }

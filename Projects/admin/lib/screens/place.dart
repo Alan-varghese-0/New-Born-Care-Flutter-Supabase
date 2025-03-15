@@ -14,9 +14,9 @@ class _PlaceState extends State<Place> {
   List<Map<String, dynamic>> distList = [];
   List<Map<String, dynamic>> placeList = [];
   bool isLoading = false;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     fetchDist();
     fetchdata();
@@ -24,9 +24,7 @@ class _PlaceState extends State<Place> {
 
   Future<void> fetchDist() async {
     try {
-      print("District");
       final response = await supabase.from('tbl_district').select();
-      print(response);
       setState(() {
         distList = response;
       });
@@ -44,10 +42,9 @@ class _PlaceState extends State<Place> {
         'district_id': selectedDistrict
       });
 
-      print("Data inserted");
       _placeController.clear();
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Inserted successufully')));
+          .showSnackBar(SnackBar(content: Text('Inserted successfully')));
     } catch (e) {
       print('Error $e');
       ScaffoldMessenger.of(context)
@@ -69,7 +66,7 @@ class _PlaceState extends State<Place> {
     } catch (e) {
       print('Error $e');
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error')));
+          .showSnackBar(SnackBar(content: Text('Error fetching places')));
     }
   }
 
@@ -80,13 +77,14 @@ class _PlaceState extends State<Place> {
       fetchdata();
 
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(' Deleted')));
+          .showSnackBar(SnackBar(content: Text('Deleted successfully')));
     } catch (e) {
-      print('error $e');
+      print('Error $e');
     }
   }
 
   int edit = 0;
+
   Future<void> update() async {
     try {
       await supabase
@@ -98,7 +96,7 @@ class _PlaceState extends State<Place> {
         edit = 0;
       });
     } catch (e) {
-      print('error $e');
+      print('Error $e');
     }
   }
 
@@ -107,117 +105,132 @@ class _PlaceState extends State<Place> {
     return ListView(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: 40,
-            vertical: 50,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 50),
           child: Form(
-              key: formkey,
-              child: Center(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField(
-                        dropdownColor: Colors.black,
-                        style: TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('District',
-                              style: TextStyle(color: Colors.white))
-                              ),
-                          value: selectedDistrict,
-                          items: distList.map((district) {
-                            return DropdownMenuItem(
-                            
-                                value: district['id'].toString(),
-                                child: Text(district['district_name']));
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedDistrict = value!;
-                            });
-                          }),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                        child: TextFormField(
-                      controller: _placeController,
+            key: formkey,
+            child: Center(
+              child: Row(
+                children: [
+                  // Dropdown for District selection
+                  Expanded(
+                    child: DropdownButtonFormField(
+                      dropdownColor: Colors.white, // Natural white background
+                      style: TextStyle(color: Colors.black), // Dark text
                       decoration: InputDecoration(
-                        label: Text(' place',style: TextStyle(color: Colors.white),),
-                        hintText: "please enter the place",
-                        hintStyle: TextStyle(color: Colors.white),
-                        border: OutlineInputBorder(),
+                        label: Text('District', style: TextStyle(color: Colors.black)),
+                        filled: true,
+                        fillColor: Color(0xFFF1F0E6), // Beige background for dropdown
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.black.withOpacity(0.2)),
+                        ),
                       ),
-                    )),
-                    SizedBox(
-                      width: 10,
+                      value: selectedDistrict,
+                      items: distList.map((district) {
+                        return DropdownMenuItem(
+                          value: district['id'].toString(),
+                          child: Text(district['district_name']),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedDistrict = value!;
+                        });
+                      },
                     ),
-                    ElevatedButton(
-                        onPressed: () {
-                          if (edit == 0) {
-                            insert();
-                          } else {
-                            update();
-                          }
-                        },
-                        child: Text('Submit',style:TextStyle(color: Colors.black )))
-                  ],
-                ),
-              )),
+                  ),
+                  SizedBox(width: 10),
+                  // Text field for place name
+                  Expanded(
+                    child: TextFormField(
+                      controller: _placeController,
+                      style: TextStyle(color: Colors.black), // Dark text
+                      decoration: InputDecoration(
+                        label: Text('Place', style: TextStyle(color: Colors.black)),
+                        hintText: "Please enter the place",
+                        hintStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
+                        filled: true,
+                        fillColor: Color(0xFFF1F0E6), // Beige background for input field
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.black.withOpacity(0.2)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  // Submit button
+                  ElevatedButton(
+                    onPressed: () {
+                      if (edit == 0) {
+                        insert();
+                      } else {
+                        update();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Color(0xFF6DAF7C),
+                    ),
+                    child: Text('Submit', style: TextStyle(color: Colors.black)),
+                  )
+                ],
+              ),
+            ),
+          ),
         ),
-        SizedBox(
-          height: 40,
-        ),
+        SizedBox(height: 40),
+        // Show loading indicator or list of places
         isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                color: Colors.white,
-              ))
+            ? Center(child: CircularProgressIndicator(color: Colors.black))
             : Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 50,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 50),
                 child: Container(
-                    color: Colors.white38,
-                    padding: EdgeInsets.all(20),
-                    child: ListView.separated(
-                        separatorBuilder: (context, index) {
-                          return Divider();
-                        },
-                        shrinkWrap: true,
-                        itemCount: placeList.length,
-                        itemBuilder: (context, index) {
-                          final _place = placeList[index];
-                          return ListTile(
-                              leading: Text(
-                                style: TextStyle(fontSize: 18),
-                                _place['place_name'],
+                  color: Colors.white.withOpacity(0.6), // Soft white background
+                  padding: EdgeInsets.all(20),
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) {
+                      return Divider();
+                    },
+                    shrinkWrap: true,
+                    itemCount: placeList.length,
+                    itemBuilder: (context, index) {
+                      final _place = placeList[index];
+                      return ListTile(
+                        leading: Text(
+                          _place['place_name'],
+                          style: TextStyle(color: Colors.black, fontSize: 18),
+                        ),
+                        trailing: SizedBox(
+                          width: 80,
+                          child: Row(
+                            children: [
+                              // Delete icon
+                              IconButton(
+                                onPressed: () {
+                                  delete(_place['id']);
+                                },
+                                icon: Icon(Icons.delete_outline),
+                                color: Color(0xFF6DAF7C), // Green for delete icon
                               ),
-                              trailing: SizedBox(
-                                width: 80,
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                        onPressed: () {
-                                          delete(_place['id']);
-                                        },
-                                        icon: Icon(Icons.delete_outline)),
-                                    IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _placeController.text =
-                                                _place['place_name'];
-                                            edit = _place['id'];
-                                          });
-                                        },
-                                        icon: Icon(Icons.edit))
-                                  ],
-                                ),
-                              ));
-                        })),
-              )
+                              // Edit icon
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _placeController.text = _place['place_name'];
+                                    edit = _place['id'];
+                                  });
+                                },
+                                icon: Icon(Icons.edit),
+                                color: Color(0xFF6DAF7C), // Green for edit icon
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
       ],
     );
   }
