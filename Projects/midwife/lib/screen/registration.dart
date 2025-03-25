@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:midwife/main.dart';
 import 'package:midwife/screen/login.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -12,121 +14,45 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-  bool _isObsture = true;
-  bool _isObsture2 = true;
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController contactController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController photoController = TextEditingController();
-  final TextEditingController proofController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController conpasswordController = TextEditingController();
-  final TextEditingController dobController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isObscure1 = true;
+  bool _isObscure2 = true;
+  bool _isLoading = false;
 
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _contact = TextEditingController();
+  final TextEditingController _address = TextEditingController();
+  final TextEditingController _dob = TextEditingController();
+  final TextEditingController _aboutMe = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _confirmPassword = TextEditingController();
+
+  String _gender = "Male";
+  String? _district; // District name
+  String? _place;   // Place ID
   List<Map<String, dynamic>> placelist = [];
   List<Map<String, dynamic>> distList = [];
-  String? selectedplace;
-  String? selecteddist;
-  
+  PlatformFile? _pickedImage;
+  PlatformFile? _pickedProof;
 
-  String gender = "male"; // Set a default value
-  PlatformFile? pickedImage;
-  PlatformFile? pickedproof;
-  Future<void> handleImagePick() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
-
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        pickedImage = result.files.first; // Store the picked file
-      });
-    } else {
-      print("No image selected");
-    }
-  }  
-
-   Future<void> handleProofPick() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
-
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        pickedproof = result.files.first;
-      });
-    } else {
-      print("No proof selected");
-    }
-  }
-
-  Future<String?> photoUpload() async {
-  if (pickedImage == null) {
-    print("No photo selected");
-    return null;
-  }
-
-  try {
-    final bucketName = 'midwife'; // Replace with your actual bucket name
-    String formattedDate = DateFormat('dd-MM-yyyy-HH-mm').format(DateTime.now());
-    final filePath = "$formattedDate-${pickedImage!.name}";
-
-    if (pickedImage!.bytes == null) {
-      print("Error: File bytes are null");
-      return null;
-    }
-
-    await supabase.storage.from(bucketName).uploadBinary(
-          filePath,
-          pickedImage!.bytes!, // Ensure this is not null
-        );
-
-    final publicUrl = supabase.storage.from(bucketName).getPublicUrl(filePath);
-    return publicUrl;
-  } catch (e) {
-    print("Error photo upload: $e");
-    return null;
-  }
-}
-
-  Future<String?> proofUpload() async {
-  try {
-    final bucketName = 'midwife_proofs'; // Change to your actual bucket name for proof documents
-    String formattedDate = DateFormat('dd-MM-yyyy-HH-mm').format(DateTime.now());
-    final filePath = "$formattedDate-${pickedproof!.name}";
-
-    if (pickedproof == null || pickedproof!.bytes == null) {
-      print("Error: Proof file is null or has no bytes");
-      return null;
-    }
-
-    await supabase.storage.from(bucketName).uploadBinary(
-          filePath,
-          pickedproof!.bytes!, // Ensure this is not null
-        );
-
-    final publicUrl = supabase.storage.from(bucketName).getPublicUrl(filePath);
-    return publicUrl;
-  } catch (e) {
-    print("Error proof upload: $e");
-    return null;
-  }
-}
-
+  final SupabaseClient supabase = Supabase.instance.client;
 
   @override
   void initState() {
     super.initState();
-    fetchdistrict();
+    fetchdistrict(); // Fetch districts on initialization
   }
 
-  Future<void> fetchplace(String id) async {
+  Future<void> fetchplace(String districtId) async {
     try {
-      final response =
-          await supabase.from('tbl_place').select().eq('district_id', id);
+      final response = await supabase.from('tbl_place').select().eq('district_id', districtId);
       setState(() {
         placelist = response;
       });
     } catch (e) {
       print('Error fetching place: $e');
-    }
+       }
   }
 
   Future<void> fetchdistrict() async {
@@ -137,150 +63,260 @@ class _RegisterState extends State<Register> {
       });
     } catch (e) {
       print('Error fetching district: $e');
+      
     }
   }
 
-  
+  Future<void> _handleImagePick() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result != null) {
+      setState(() {
+        _pickedImage = result.files.first;
+      });
+    }
+  }
 
- 
+  Future<void> _handleProofPick() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
+    if (result != null) {
+      setState(() {
+        _pickedProof = result.files.first;
+      });
+    }
+  }
 
-  Future<void> reg() async {
+  Future<void> _handleDatePick() async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1970),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.teal.shade600,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (pickedDate != null) {
+      setState(() {
+        _dob.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+      });
+    }
+  }
+
+  Future<String?> _uploadFile(PlatformFile file, String folder) async {
     try {
-      final authResponse = await supabase.auth.signUp(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      String uid = authResponse.user!.id;
-      insert(uid);
+      final fileBytes = file.bytes ?? File(file.path!).readAsBytesSync();
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+      final filePath = '$folder/$fileName';
+
+      await supabase.storage.from('midwife').uploadBinary(
+            filePath,
+            fileBytes,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      return supabase.storage.from('midwife').getPublicUrl(filePath);
     } catch (e) {
-      print('Error: $e');
+      print("image Error: $e");
+      return null;
     }
   }
 
-  Future<void> insert(String uid) async {
-    try {String dobValue = dobController.text.isEmpty 
-    ? DateFormat('yyyy-MM-dd').format(DateTime.now()) 
-    : dobController.text;
-      String? photoUrl = await photoUpload();
-      String? proofUrl = await proofUpload();
-      await supabase.from('tbl_midwife').insert([
-        {
-          'midwife_name': nameController.text,
-          'midwife_email': emailController.text,
-          'midwife_contact': contactController.text,
-          'midwife_address': addressController.text,
-          'midwife_pass': passwordController.text,
-          'midwife_dob': dobValue,
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await supabase.auth.signUp(
+        email: _email.text,
+        password: _password.text,
+      );
+
+      if (response.user != null) {
+        String? photoUrl;
+        String? proofUrl;
+
+        if (_pickedImage != null) {
+          photoUrl = await _uploadFile(_pickedImage!, 'photos');
+          if (photoUrl == null) throw Exception('Photo upload failed');
+        }
+
+        if (_pickedProof != null) {
+          proofUrl = await _uploadFile(_pickedProof!, 'proofs');
+          if (proofUrl == null) throw Exception('Proof upload failed');
+        }
+
+        await supabase.from('tbl_midwife').insert({
+          'id': response.user!.id,
+          'midwife_name': _name.text,
+          'midwife_email': _email.text,
+          'midwife_contact': _contact.text,
+          'midwife_address': _address.text,
+          'place_id': _place,
+          'midwife_dob': _dob.text,
+          'midwife_gender': _gender,
+          'midwife_about': _aboutMe.text,
           'midwife_photo': photoUrl,
           'midwife_licence': proofUrl,
-          'place_id': selectedplace,
-          'midwife_gender' : gender,
-        },
-      ]);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration successful')),
-      );
-      Navigator.pushReplacement(
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => MidwifeLogin(),
-          ));
+          MaterialPageRoute(builder: (context) => const MidwifeLogin()),
+        );
+      }
     } catch (e) {
-      print("failed: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed:')),
-      );
+      print('Error registering: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(30),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Seller Registration",
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 20),
-                      buildTextField("Full Name", nameController, Icons.person),
-                      buildTextField("Email", emailController, Icons.email),
-                      buildTextField("Contact", contactController, Icons.phone),
-                      buildTextField(
-                          "Address", addressController, Icons.location_city),
-                      buildDropdownField("District", selecteddist, distList,
-                          (value) {
-                        setState(() {
-                          selecteddist = value!;
-                          fetchplace(value);
-                        });
-                      }),
-                      buildDropdownField("Place", selectedplace, placelist,
-                          (value) {
-                        setState(() {
-                          selectedplace = value!;
-                        });
-                      }),
-                      buildGenderRadio(),
-
-                      buildTextField("Date of Birth", dobController, Icons.calendar_today, onTap: handleDatePick),
-
-
-                      buildTextField(
-                          "Upload Photo", photoController, Icons.photo,
-                          onTap: handleImagePick),
-                      buildTextField(
-                          "Upload Proof", proofController, Icons.file_present,
-                          onTap: handleProofPick),
-                      buildPasswordField(
-                          "Password", passwordController, _isObsture, () {
-                        setState(() => _isObsture = !_isObsture);
-                      }),
-                      buildPasswordField("Confirm Password",
-                          conpasswordController, _isObsture2, () {
-                        setState(() => _isObsture2 = !_isObsture2);
-                      }),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.all(15),
-                            backgroundColor: Colors.blueAccent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: reg,
-                          child: const Text(
-                            "Sign Up",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                        ),
+      backgroundColor: Colors.teal.shade50,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MidwifeLogin()));
+          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+        ),
+        title: Text(
+          "Become a Midwife",
+          style: GoogleFonts.nunito(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.teal.shade600,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.teal.shade200.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Support Mothers Every Step of the Way",
+                        style: GoogleFonts.nunito(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal.shade800,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildTextField("Full Name", _name, Icons.person),
+                      _buildTextField("Email", _email, Icons.email),
+                      _buildTextField("Contact Number", _contact, Icons.phone),
+                      _buildTextField("Address", _address, Icons.location_on),
+                      _buildDropdownField(
+                        "District",
+                        _district,
+                        distList.map((d) => d['district_name'] as String).toList(),
+                        (value) {
+                          setState(() {
+                            _district = value;
+                            _place = null; // Reset place when district changes
+                            final selectedDistrict = distList.firstWhere((d) => d['district_name'] == value);
+                            fetchplace(selectedDistrict['id'].toString());
+                          });
+                        },
+                      ),
+                      _buildDropdownField(
+                        "Place",
+                        _place != null
+                            ? placelist.firstWhere((p) => p['id'].toString() == _place, orElse: () => {'place_name': ''})['place_name'] as String?
+                            : null,
+                        placelist.map((p) => p['place_name'] as String).toList(),
+                        (value) {
+                          setState(() {
+                            _place = placelist.firstWhere((p) => p['place_name'] == value)['id'].toString();
+                          });
+                        },
+                        enabled: _district != null && placelist.isNotEmpty,
+                      ),
+                      _buildDateField("Date of Birth", _dob),
+                      _buildTextField("About Me", _aboutMe, Icons.info, maxLines: 3),
+                      _buildGenderSelection(),
+                      _buildFilePicker("Profile Photo", _pickedImage, _handleImagePick),
+                      _buildFilePicker("Certification Proof", _pickedProof, _handleProofPick),
+                      _buildPasswordField("Password", _password, _isObscure1, () => setState(() => _isObscure1 = !_isObscure1)),
+                      _buildPasswordField("Confirm Password", _confirmPassword, _isObscure2, () => setState(() => _isObscure2 = !_isObscure2)),
+                    ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 5,
+                    textStyle: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text("Register as Midwife"),
+                ),
+                const SizedBox(height: 15),
+                TextButton(
+                  onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MidwifeLogin())),
+                  child: Text(
+                    "Already a midwife? Login here",
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      color: Colors.teal.shade800,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -288,107 +324,193 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  Widget buildTextField(
-      String hint, TextEditingController controller, IconData icon,
-      {VoidCallback? onTap}) {
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
-        readOnly: onTap != null,
-        onTap: onTap,
-        decoration: inputDecoration(hint).copyWith(
-          prefixIcon: Icon(icon),
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
+          prefixIcon: Icon(icon, color: Colors.teal.shade600),
+          filled: true,
+          fillColor: Colors.teal.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
+          ),
         ),
+        validator: (value) => value!.isEmpty ? "Please enter $label" : null,
       ),
     );
   }
 
-  Widget buildPasswordField(String hint, TextEditingController controller,
-      bool isObscure, VoidCallback toggle) {
+  Widget _buildDateField(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        onTap: _handleDatePick,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
+          prefixIcon: Icon(Icons.calendar_today, color: Colors.teal.shade600),
+          filled: true,
+          fillColor: Colors.teal.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
+          ),
+        ),
+        validator: (value) => value!.isEmpty ? "Please select $label" : null,
+      ),
+    );
+  }
+
+  Widget _buildDropdownField(String label, String? value, List<String> items, ValueChanged<String?> onChanged, {bool enabled = true}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items.map((String item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item, style: GoogleFonts.nunito(fontSize: 16, color: Colors.teal.shade800)),
+          );
+        }).toList(),
+        onChanged: enabled ? onChanged : null,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
+          filled: true,
+          fillColor: Colors.teal.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
+          ),
+        ),
+        validator: (value) => value == null ? "Please select $label" : null,
+      ),
+    );
+  }
+
+  Widget _buildGenderSelection() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Gender",
+            style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.teal.shade700),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: ["Male", "Female"].map((String option) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 24),
+                child: Row(
+                  children: [
+                    Radio<String>(
+                      value: option,
+                      groupValue: _gender,
+                      onChanged: (value) => setState(() => _gender = value!),
+                      activeColor: Colors.teal.shade600,
+                    ),
+                    Text(option, style: GoogleFonts.nunito(fontSize: 16, color: Colors.teal.shade800)),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(String label, TextEditingController controller, bool isObscure, VoidCallback toggleVisibility) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
         obscureText: isObscure,
-        decoration: inputDecoration(hint).copyWith(
-          prefixIcon: const Icon(Icons.lock),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
+          prefixIcon: Icon(Icons.lock, color: Colors.teal.shade600),
           suffixIcon: IconButton(
-            onPressed: toggle,
-            icon: Icon(isObscure ? Icons.visibility_off : Icons.visibility),
+            icon: Icon(isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.teal.shade600),
+            onPressed: toggleVisibility,
+          ),
+          filled: true,
+          fillColor: Colors.teal.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Please enter $label";
+          }
+          if (label == "Confirm Password" && value != _password.text) {
+            return "Passwords do not match";
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilePicker(String label, PlatformFile? file, VoidCallback onPick) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: GestureDetector(
+        onTap: onPick,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.teal.shade50,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.teal.shade200),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  file != null ? file.name : label,
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    color: file != null ? Colors.teal.shade800 : Colors.teal.shade700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(Icons.upload, color: Colors.teal.shade600, size: 24),
+            ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget buildDropdownField(String hint, String? value,
-      List<Map<String, dynamic>> list, Function(String?) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: DropdownButtonFormField(
-        decoration: inputDecoration(hint),
-        value: value,
-        items: list.map((item) {
-          return DropdownMenuItem(
-            value: item['id'].toString(),
-            child: Text(item['district_name'] ?? item['place_name']),
-          );
-        }).toList(),
-        onChanged: onChanged,
-      ),
-    );
-  }
-  Widget buildGenderRadio() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text("Gender", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      Row(
-        children: ["Male", "Female"].map((String genderOption) {
-          return Expanded(
-            child: Row(
-              children: [
-                Radio<String>(
-                  value: genderOption,
-                  groupValue: gender,
-                  onChanged: (String? value) {
-                    setState(() {
-                      gender = value ?? "male"; // Default to Male if null
-                    });
-                  },
-                ),
-                Text(genderOption),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    ],
-  );
-}
-
-Future<void> handleDatePick() async {
-  DateTime? pickedDate = await showDatePicker(
-    context: context,
-    initialDate: DateTime.now(),
-    firstDate: DateTime(1970),
-    lastDate: DateTime.now(),
-  );
-  if (pickedDate != null) {
-    setState(() {
-      dobController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
-    });
-  }
-}
-
-  InputDecoration inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
     );
   }
 }

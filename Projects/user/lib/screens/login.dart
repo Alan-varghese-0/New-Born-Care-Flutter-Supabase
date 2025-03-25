@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:user/components/form_validation.dart';
 import 'package:user/main.dart';
 import 'package:user/screens/home.dart';
-import 'package:user/screens/signup.dart';
-import 'package:user/screens/start.dart';
+import 'package:user/screens/signin.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -16,10 +16,14 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _pass = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isObscure = true;
 
-  void Signin() async {
+  void signIn() async {
+    if (!_formKey.currentState!.validate()) return;
+
     try {
-      String email = _email.text;
+      String email = _email.text.trim();
       String password = _pass.text;
       final AuthResponse res = await supabase.auth.signInWithPassword(
         email: email,
@@ -28,156 +32,208 @@ class _LoginState extends State<Login> {
       final User? user = res.user;
       if (user != null) {
         Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Home(),
-            ));
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
       }
-
-      print("sign in successfully");
+      print("Sign in successful");
     } catch (e) {
       if (e is AuthException) {
-    print("Error During sign in: $e");
-    if(e.code == "invalid_credentials")
-    {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Email or Password Incorrect")));
+        print("Error during sign in: $e");
+        if (e.code == "invalid_credentials") {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Email or password incorrect",
+                style: GoogleFonts.nunito(color: Colors.white),
+              ),
+              backgroundColor: Colors.pink.shade300, // Match theme
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        print("Unexpected error: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "An unexpected error occurred",
+              style: GoogleFonts.nunito(color: Colors.white),
+            ),
+            backgroundColor: Colors.pink.shade300, // Match theme
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
-    print("Error Code: ${e.code}");
-  } else {
-    print("Unexpected error: $e");
   }
-    }
-  }
-
-  bool _isObsture = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Start(),
-                  ));
-            },
-            icon: Icon(Icons.arrow_back)),
-        title: Text(
-          "login",
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.pink.shade200, Colors.purple.shade200], // Match Forum gradient
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
-        centerTitle: false,
-      ),
-      body: Center(
-        child: Form(
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration:
-                BoxDecoration(color:Color(0xFFE3F2F1),),
-            child: Container(
-              padding: EdgeInsets.all(30),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(
-                      height: 200,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Header
+                  Text(
+                    "Welcome Back!",
+                    style: GoogleFonts.nunito(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade800, // Match theme
                     ),
-                    // Text(
-                    //   "E-mail",
-                    //   style: TextStyle(
-                    //     fontSize: 25,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    //   textAlign: TextAlign.left,
-                    // ),
-                    TextFormField(
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Log in to stay connected with your midwife",
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      color: Colors.grey[600], // Match Forum subtitle
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+
+                  // Email Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16), // Match Forum text field
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.pink.shade100.withOpacity(0.5), // Match Forum shadow
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: TextFormField(
                       controller: _email,
                       validator: (value) => FormValidation.validateEmail(value),
                       decoration: InputDecoration(
-                    fillColor:Color(0xFFFFFFFF),
-                      filled: true,
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20)),
-                          hintText: 'Enter your Email',
-                          suffixIcon: Icon(Icons.mail)),
+                        hintText: "Enter your email",
+                        hintStyle: GoogleFonts.nunito(color: Colors.purple.shade600), // Match theme
+                        prefixIcon: Icon(Icons.mail, color: Colors.purple.shade600), // Match theme
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey[800]), // Match Forum text
                     ),
-                    SizedBox(
-                      height: 20,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Password Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16), // Match Forum text field
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.pink.shade100.withOpacity(0.5), // Match Forum shadow
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    // Text(
-                    //   'password',
-                    //   style: TextStyle(
-                    //     fontSize: 25,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    //   textAlign: TextAlign.left,
-                    // ),
-                    TextFormField(
+                    child: TextFormField(
                       controller: _pass,
-                      validator: (value) =>
-                          FormValidation.validatePassword(value),
+                      validator: (value) => FormValidation.validatePassword(value),
+                      obscureText: _isObscure,
                       decoration: InputDecoration(
-                    fillColor:Color(0xFFFFFFFF),
-                      filled: true,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        hintText: 'Enter your password',
+                        hintText: "Enter your password",
+                        hintStyle: GoogleFonts.nunito(color: Colors.purple.shade600), // Match theme
+                        prefixIcon: Icon(Icons.lock, color: Colors.purple.shade600), // Match theme
                         suffixIcon: IconButton(
+                          icon: Icon(
+                            _isObscure ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.purple.shade600, // Match theme
+                          ),
                           onPressed: () {
                             setState(() {
-                              _isObsture = !_isObsture;
+                              _isObscure = !_isObscure;
                             });
                           },
-                          icon: Icon(_isObsture
-                              ? Icons.visibility_off
-                              : Icons.visibility),
                         ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                       ),
                       keyboardType: TextInputType.visiblePassword,
-                      obscureText: _isObsture,
+                      style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey[800]), // Match Forum text
                     ),
-                    SizedBox(
-                      height: 30,
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Login Button
+                  ElevatedButton(
+                    onPressed: signIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink.shade300, // Match Forum button
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12), // Match Forum button shape
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
+                      elevation: 2, // Match Forum button elevation
                     ),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor:Color(0xFFFFF8E1)),
-                        onPressed: () {
-                          Signin();
+                    child: Text(
+                      "Log In",
+                      style: GoogleFonts.nunito(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Sign Up Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don’t have an account? ",
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          color: Colors.grey[600], // Match Forum subtitle
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SignUp()),
+                          );
                         },
                         child: Text(
-                          'login',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.black),
-                        )),
-                    SizedBox(
-                      height: 35,
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          "            don't have an account",
+                          "Sign Up",
+                          style: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple.shade600, // Match theme
+                          ),
                         ),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SignUp(),
-                                  ));
-                            },
-                            child: Text("sign up")),
-                      ],
-                    )
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),

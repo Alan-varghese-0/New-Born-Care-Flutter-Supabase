@@ -9,7 +9,6 @@ class District extends StatefulWidget {
 }
 
 class _DistrictState extends State<District> {
-
   TextEditingController _district = TextEditingController();
   List<Map<String, dynamic>> fetchdistrict = [];
   bool isLoading = true;
@@ -29,12 +28,17 @@ class _DistrictState extends State<District> {
       fetchdata();
       _district.clear();
       print("Inserted");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Data Inserted Successfully")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Data Inserted Successfully"),
+          backgroundColor: Color(0xFFD81B60), // Deep Pink
+        ),
+      );
     } catch (e) {
       print("Error $e");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Insert Failed: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Insert Failed: $e")),
+      );
     }
   }
 
@@ -47,8 +51,9 @@ class _DistrictState extends State<District> {
       });
     } catch (e) {
       print("Error $e");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Fetch Failed: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Fetch Failed: $e")),
+      );
     }
   }
 
@@ -56,7 +61,12 @@ class _DistrictState extends State<District> {
     try {
       await supabase.from('tbl_district').delete().eq('id', id);
       fetchdata();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Deleted")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Deleted"),
+          backgroundColor: Color(0xFFD81B60), // Deep Pink
+        ),
+      );
     } catch (e) {
       print("Error Deleting $e");
     }
@@ -74,6 +84,12 @@ class _DistrictState extends State<District> {
       setState(() {
         editId = 0;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Updated Successfully"),
+          backgroundColor: Color(0xFFD81B60), // Deep Pink
+        ),
+      );
     } catch (e) {
       print('Unable to edit $e');
     }
@@ -81,118 +97,133 @@ class _DistrictState extends State<District> {
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? Center(child: CircularProgressIndicator())
-        : ListView(
-            padding: EdgeInsets.symmetric(vertical: 50, horizontal: 80),
-            children: [
-              Form(
-                child: Center(
-                  child: Row(
-                    children: [
-                      // Text field for district input
-                      Expanded(
-                        child: TextFormField(
-                          style: TextStyle(color: Colors.black), // Dark text for readability
-                          controller: _district,
-                          decoration: InputDecoration(
-                            label: Text(
-                              "District",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            hintText: 'Please enter the district',
-                            hintStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
-                            filled: true,
-                            fillColor: Color(0xFFF1F0E6), // Soft beige background for input
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.black.withOpacity(0.2)),
+    return Container(
+      color: Color(0xFF37474F), // Slate Gray background
+      child: isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFFD81B60), // Deep Pink spinner
+              ),
+            )
+          : ListView(
+              padding: EdgeInsets.symmetric(vertical: 50, horizontal: 80),
+              children: [
+                Form(
+                  child: Center(
+                    child: Row(
+                      children: [
+                        // Text field for district input
+                        Expanded(
+                          child: TextFormField(
+                            style: TextStyle(color: Color(0xFFECEFF1)), // Light Gray text
+                            controller: _district,
+                            decoration: InputDecoration(
+                              label: Text(
+                                "District",
+                                style: TextStyle(color: Color(0xFFECEFF1)),
+                              ),
+                              hintText: 'Please enter the district',
+                              hintStyle: TextStyle(color: Color(0xFFECEFF1).withOpacity(0.6)),
+                              filled: true,
+                              fillColor: Color(0xFF455A64), // Darker Slate background
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Color(0xFFECEFF1).withOpacity(0.2)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Color(0xFFD81B60)), // Deep Pink focus
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (editId == 0) {
-                            insert();
-                          } else {
-                            update();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, backgroundColor: Color(0xFF6DAF7C),
-                        ),
-                        child: Text(
-                          "Submit",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (editId == 0) {
+                              insert();
+                            } else {
+                              update();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFD81B60), // Deep Pink
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          ),
+                          child: Text(
+                            "Submit",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      )
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 20),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.white.withOpacity(0.6), // Soft white background with transparency
-                ),
-                margin: EdgeInsets.all(20),
-                padding: EdgeInsets.all(20),
-                child: ListView.separated(
-                  separatorBuilder: (context, index) {
-                    return Divider();
-                  },
-                  shrinkWrap: true,
-                  itemCount: fetchdistrict.length,
-                  itemBuilder: (context, index) {
-                    final district = fetchdistrict[index];
-                    return ListTile(
-                      leading: Text(
-                        district['district_name'],
-                        style: TextStyle(
-                          color: Colors.black, // Dark text for clarity
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.w500,
+                SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Color(0xFF455A64), // Darker Slate for list container
+                  ),
+                  margin: EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20),
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) {
+                      return Divider(color: Color(0xFFECEFF1).withOpacity(0.2));
+                    },
+                    shrinkWrap: true,
+                    itemCount: fetchdistrict.length,
+                    itemBuilder: (context, index) {
+                      final district = fetchdistrict[index];
+                      return ListTile(
+                        leading: Text(
+                          district['district_name'],
+                          style: TextStyle(
+                            color: Color(0xFFECEFF1), // Light Gray text
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      trailing: SizedBox(
-                        width: 80,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                delete(district['id']);
-                              },
-                              icon: Icon(
-                                Icons.delete,
-                                color: Color(0xFF6DAF7C), // Soft green for delete icon
+                        trailing: SizedBox(
+                          width: 80,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  delete(district['id']);
+                                },
+                                icon: Icon(
+                                  Icons.delete,
+                                  color: Color(0xFFD81B60), // Deep Pink
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _district.text = district['district_name'];
-                                  editId = district['id'];
-                                });
-                              },
-                              icon: Icon(
-                                Icons.edit,
-                                color: Color(0xFF6DAF7C), // Soft green for edit icon
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _district.text = district['district_name'];
+                                    editId = district['id'];
+                                  });
+                                },
+                                icon: Icon(
+                                  Icons.edit,
+                                  color: Color(0xFFD81B60), // Deep Pink
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
-          );
+              ],
+            ),
+    );
   }
 }

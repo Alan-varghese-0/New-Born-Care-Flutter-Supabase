@@ -1,5 +1,4 @@
-import 'package:admin/screens/dashboard.dart';
-// import 'package:admin/login.dart';
+import 'package:admin/screens/login.dart';
 import 'package:flutter/material.dart';
 
 
@@ -22,7 +21,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Dashboard()
+      home: Login()
     );
   }
 }

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:user/main.dart';
-import 'package:user/screens/cart.dart';
+import 'package:user/screens/community/viewpost.dart';
 import 'package:user/screens/forum.dart';
 import 'package:user/screens/home_content.dart';
 import 'package:user/screens/my_account.dart';
-import 'package:user/screens/post.dart';
 import 'package:user/screens/search.dart';
-import 'package:user/screens/shop.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -21,47 +20,39 @@ class _HomeState extends State<Home> {
   Future<void> fetchUser() async {
     try {
       String uid = supabase.auth.currentUser!.id;
-      final response =
-          await supabase.from("tbl_user").select().eq('id', uid).single();
+      final response = await supabase.from("tbl_user").select().eq('id', uid).single();
       setState(() {
-        name = response['user_name'];
+        name = response['user_name'] ?? "";
       });
     } catch (e) {
-      print("user feach failed $e");
+      print("User fetch failed: $e");
     }
   }
 
   int selectedIndex = 0;
 
   List<Widget> pageContent = [
-    HomeContent(),
-    Forum(),
-    Shop(),
-    Post(),
+    const HomeContent(),
+    const Forum(),
+    const Viewpost(),
   ];
 
-  // Function to extract the initials
   String getInitials(String name) {
     String initials = '';
-    if(name!="" || name.isNotEmpty){
+    if (name.isNotEmpty) {
       List<String> nameParts = name.split(' ');
-
-    if (nameParts.isNotEmpty) {
-      // Take the first letter of the first name
-      initials += nameParts[0][0];
-      if (nameParts.length > 1) {
-        // Take the first letter of the last name if it exists
-        initials += nameParts[1][0];
+      if (nameParts.isNotEmpty) {
+        initials += nameParts[0][0];
+        if (nameParts.length > 1) {
+          initials += nameParts[1][0];
+        }
       }
     }
-    }
-
-    return initials.toUpperCase(); // Ensure the initials are uppercase
+    return initials.toUpperCase();
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     fetchUser();
   }
@@ -69,124 +60,143 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.pink.shade50, // Soft pink background
       drawer: Drawer(
         width: 250,
+        backgroundColor: Colors.white,
         child: ListView(
+          padding: const EdgeInsets.all(16),
           children: [
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MyAccount(),
-                    ));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAccount()));
               },
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.blue, // Or any color you prefer
-                child: Text(
-                  getInitials(name), // Call the function to get initials
-                  style: TextStyle(
-                    fontSize: 30,
-                    color: Colors.white,
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.purple.shade100.withOpacity(0.2), // Softer purple
+                    child: Text(
+                      getInitials(name),
+                      style: GoogleFonts.nunito(
+                        fontSize: 30,
+                        color: Colors.purple.shade800,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Text(
+                    name.isEmpty ? "Mama-to-Be" : name, // Pregnancy-friendly default
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.pacifico( // Nurturing font
+                      fontSize: 24,
+                      color: Colors.purple.shade800,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(
-              height: 10,
-            ),
-            Text(
-              name,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.black,
-              ),
-            ),
-            // ListTile(
-            //   leading: Icon(Icons.question_answer),
-            //   title: Text("Q&A"),
-            // ),
-            ListTile(
-              leading: Icon(Icons.shopping_bag),
-              title: Text("my orders"),
-            ),
-            ListTile(
-              leading: Icon(Icons.sms_failed_sharp),
-              title: Text("my Q&A"),
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text("Settings"),
-            ),ListTile(
-              leading: Icon(Icons.headset_mic_rounded),
-              title: Text("help and support"),
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text("Log Out"),
-            ),
+            const SizedBox(height: 20),
+            _buildDrawerItem(Icons.favorite, "My Journey", () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAccount()));
+            }),
+            _buildDrawerItem(Icons.chat_bubble_outline, "Pregnancy Q&A", () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const Forum()));
+            }),
+            _buildDrawerItem(Icons.photo_camera, "Moments", () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const Viewpost()));
+            }),
+            _buildDrawerItem(Icons.help_outline, "Support", () {}),
+            _buildDrawerItem(Icons.logout, "Log Out", () async {
+              await supabase.auth.signOut();
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
+            }),
           ],
         ),
       ),
       appBar: AppBar(
-        title: Text("New Born Care"),
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.pink.shade200, Colors.purple.shade200], // Pregnancy theme gradient
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: Text(
+          "NewBorn Care", // Pregnancy-focused app name
+          style: GoogleFonts.pacifico(
+            fontSize: 24,
+            color: Colors.white,
+            shadows: const [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+          ),
+        ),
         actions: [
           IconButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Search(),
-                    ));
-              },
-              icon: Icon(Icons.search)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const MidwifeListScreen()));
+            },
+            icon: const Icon(Icons.search, color: Colors.white, size: 28),
+            tooltip: 'Find a Midwife',
+          ),
           IconButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Cart(),
-                    ));
-              },
-              icon: Icon(Icons.shopping_cart)),
-          IconButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MyAccount(),
-                    ));
-              },
-              icon: Icon(Icons.person_2)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAccount()));
+            },
+            icon: const Icon(Icons.person, color: Colors.white, size: 28),
+            tooltip: 'My Journey',
+          ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-          unselectedItemColor: Color.fromARGB(255, 230, 104, 146),
-          selectedItemColor: const Color.fromARGB(255, 99, 161, 212),
-          currentIndex: selectedIndex,
-          onTap: (value) {
-            setState(() {
-              selectedIndex = value;
-            });
-          },
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.question_answer), label: "Q&A"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_basket_outlined), label: "Shop"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.video_collection_rounded), label: "Post"),
-          ]),
       body: pageContent[selectedIndex],
-      floatingActionButton: selectedIndex == 1
-          ? FloatingActionButton(
-              onPressed: () {},
-              child: Icon(Icons.add),
-            )
-          : null,
+      // bottomNavigationBar: BottomNavigationBar(
+      //   backgroundColor: Colors.white,
+      //   unselectedItemColor: Colors.pink.shade300,
+      //   selectedItemColor: Colors.purple.shade800,
+      //   currentIndex: selectedIndex,
+      //   onTap: (value) {
+      //     setState(() {
+      //       selectedIndex = value;
+      //     });
+      //   },
+      //   items: const [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Q&A"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.photo), label: "Moments"),
+      //   ],
+      //   type: BottomNavigationBarType.fixed,
+      //   selectedLabelStyle: GoogleFonts.nunito(fontWeight: FontWeight.bold, fontSize: 14),
+      //   unselectedLabelStyle: GoogleFonts.nunito(fontSize: 12),
+      // ),
+      // floatingActionButton: selectedIndex == 1
+      //     ? FloatingActionButton(
+      //         onPressed: () {
+      //           // Add logic to create a new Q&A post if needed
+      //         },
+      //         backgroundColor: Colors.pink.shade300, // Theme color
+      //         elevation: 4,
+      //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      //         child: const Icon(Icons.add, color: Colors.white, size: 32),
+      //       )
+      //     : null,
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.purple.shade600, size: 24), // Theme color
+      title: Text(
+        title,
+        style: GoogleFonts.nunito(
+          fontSize: 16,
+          color: Colors.purple.shade800,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      onTap: onTap,
     );
   }
 }

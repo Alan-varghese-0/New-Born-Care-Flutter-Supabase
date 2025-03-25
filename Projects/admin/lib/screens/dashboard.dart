@@ -1,8 +1,6 @@
 import 'package:admin/screens/account.dart';
-import 'package:admin/screens/category.dart';
 import 'package:admin/screens/district.dart';
 import 'package:admin/screens/place.dart';
-import 'package:admin/screens/subcategorty.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -13,51 +11,54 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-
   int selectedIndex = 0;
 
   List<String> pageName = [
-    'Account',  // No change
-    'District', // No change
-    'Place',    // No change
-    'Category', // No change
-    'Subcategory', // No change
+    'Account',
+    'District',
+    'Place',
   ];
 
   List<IconData> pageIcon = [
-    Icons.account_circle, // Icon for Account
-    Icons.location_city,  // Icon for District
-    Icons.place,          // Icon for Place
-    Icons.category,       // Icon for Category
-    Icons.subscriptions   // Icon for Subcategory
+    Icons.account_circle,
+    Icons.location_city,
+    Icons.place,
   ];
 
   List<Widget> pageContent = [
-    Account(),   // Account (Unchanged)
-    District(),  // District (Unchanged)
-    Place(),     // Place (Unchanged)
-    Category(),  // Category (Unchanged)
-    Subcategory(), // Subcategory (Unchanged)
+    Home(),
+    District(),
+    Place(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pregnancy Care Admin Dashboard"),
-        backgroundColor: Color(0xFF6DAF7C), // Natural soft green
+        title: Text(
+          "Pregnancy Care Admin",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Color(0xFFD81B60), // Deep Pink
+        elevation: 2, // Subtle shadow
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: Icon(Icons.notifications, color: Colors.white),
             onPressed: () {
               // Handle notifications here
             },
+            tooltip: 'Notifications',
           ),
           IconButton(
-            icon: Icon(Icons.exit_to_app),
+            icon: Icon(Icons.exit_to_app, color: Colors.white),
             onPressed: () {
               // Handle logout here
             },
+            tooltip: 'Logout',
           ),
         ],
       ),
@@ -67,27 +68,71 @@ class _DashboardState extends State<Dashboard> {
           Expanded(
             flex: 1,
             child: Container(
-              color: Color(0xFFF1F0E6), // Soft light beige for sidebar background
-              child: ListView.builder(
-                shrinkWrap: false,
-                itemCount: pageName.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = index;
-                      });
-                    },
-                    leading: Icon(
-                      pageIcon[index],
-                      color: Color(0xFF4C8C4A), // Darker green for icons
+              color: Color(0xFF263238), // Dark Grayish Blue
+              child: Column(
+                children: [
+                  // Sidebar Header
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    color: Color(0xFFD81B60), // Deep Pink
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.favorite, // Heart icon for pregnancy care
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          "Care Admin",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    title: Text(
-                      pageName[index],
-                      style: TextStyle(color: Color(0xFF4C8C4A)), // Darker green for text
+                  ),
+                  // Sidebar Menu
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: pageName.length,
+                      itemBuilder: (context, index) {
+                        bool isSelected = selectedIndex == index;
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          child: ListTile(
+                            onTap: () {
+                              setState(() {
+                                selectedIndex = index;
+                              });
+                            },
+                            leading: Icon(
+                              pageIcon[index],
+                              color: isSelected ? Colors.white : Color(0xFFECEFF1),
+                              size: 26,
+                            ),
+                            title: Text(
+                              pageName[index],
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Color(0xFFECEFF1),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            tileColor: isSelected ? Color(0xFFD81B60) : null,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            hoverColor: Color(0xFFD81B60).withOpacity(0.2), // Subtle pink hover
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
           ),
@@ -95,13 +140,21 @@ class _DashboardState extends State<Dashboard> {
           Expanded(
             flex: 6,
             child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/pregnancy_care_bg.jpg"), // Background image
-                  fit: BoxFit.cover,
+              color: Color(0xFF37474F), // Slate Gray
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Card(
+                  elevation: 2, // Subtle shadow
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  color: Color(0xFF455A64), // Darker Slate
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: pageContent[selectedIndex],
+                  ),
                 ),
               ),
-              child: pageContent[selectedIndex], // Displays the corresponding content page
             ),
           ),
         ],

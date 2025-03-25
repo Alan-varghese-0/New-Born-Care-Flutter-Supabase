@@ -1,7 +1,7 @@
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:user/screens/start.dart';
+import 'package:user/screens/login.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
@@ -19,7 +19,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home:Start()
+      home:Login()
     );
   }
 }

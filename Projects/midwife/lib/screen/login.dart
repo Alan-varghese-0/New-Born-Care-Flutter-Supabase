@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:midwife/components/form_validation.dart';
 import 'package:midwife/screen/dashboard.dart';
 import 'package:midwife/screen/registration.dart';
-import 'package:midwife/screen/start.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MidwifeLogin extends StatefulWidget {
@@ -30,7 +29,7 @@ class _MidwifeLoginState extends State<MidwifeLogin> {
       if (res.user != null) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => home()),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
           (route) => false,
         );
       }
@@ -45,13 +44,7 @@ class _MidwifeLoginState extends State<MidwifeLogin> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const Start()),
-          ),
-          icon: const Icon(Icons.arrow_back),
-        ),
+       
         title: Text(
           "Midwife Login",
           style: GoogleFonts.nunito(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
