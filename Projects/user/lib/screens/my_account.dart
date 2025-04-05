@@ -192,7 +192,7 @@ class _MyAccountState extends State<MyAccount> {
                   Flexible(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangePass()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangePasswordPage()));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple.shade300,

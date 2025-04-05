@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:user/main.dart'; // Ensure supabase is defined here
+import 'package:user/main.dart';
+import 'package:user/screens/servicedate.dart';
 
 // Midwife model class
 class Midwife {
+  final String id;
   final String name;
   final String location;
   final String bio;
   final String contact;
+  final String photo;
+  final int status;      // Added midwife_status
+  final int availability; // midwife_available
 
   Midwife({
+    required this.id,
     required this.name,
     required this.location,
     required this.bio,
     required this.contact,
-  });
+    required this.photo,
+    int? status,
+    int? availability,
+  })  : status = status ?? 0, // Default to 0 (inactive) if null
+        availability = availability ?? 0; // Default to 0 (unavailable) if null
 }
 
-// Main screen
 class MidwifeListScreen extends StatefulWidget {
   const MidwifeListScreen({super.key});
 
@@ -31,17 +40,25 @@ class _MidwifeListScreenState extends State<MidwifeListScreen> {
 
   Future<void> fetchUser() async {
     try {
-      final response = await supabase.from("tbl_midwife").select();
+      // Fetch midwives where midwife_status = 1
+      final response = await supabase
+          .from("tbl_midwife")
+          .select()
+          .eq("midwife_status", 1); // Filter for active midwives only
+      
       print("Midwives data fetched: $response");
 
       setState(() {
         _midwives = (response as List<dynamic>).map((data) {
-          print(data['midwife_about']);
           return Midwife(
-            name: data['midwife_name'],
-            location: data['midwife_address'],
-            bio: data['midwife_about'],
-            contact: data['midwife_contact'],
+            id: data['id']?.toString() ?? '',
+            name: data['midwife_name'] ?? 'Unknown',
+            location: data['midwife_address'] ?? 'No location',
+            bio: data['midwife_about'] ?? 'No bio',
+            contact: data['midwife_contact'] ?? 'No contact',
+            photo: data['midwife_photo'] ?? 'https://via.placeholder.com/150',
+            status: data['midwife_status'],
+            availability: data['midwife_available'],
           );
         }).toList();
         _isLoading = false;
@@ -66,13 +83,13 @@ class _MidwifeListScreenState extends State<MidwifeListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.pink.shade50, // Match Forum background
+      backgroundColor: Colors.pink.shade50,
       appBar: AppBar(
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.pink.shade200, Colors.purple.shade200], // Match Forum gradient
+              colors: [Colors.pink.shade200, Colors.purple.shade200],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -80,14 +97,16 @@ class _MidwifeListScreenState extends State<MidwifeListScreen> {
         ),
         title: Text(
           "Find a Midwife",
-          style: GoogleFonts.pacifico( // Match Forum title style
+          style: GoogleFonts.pacifico(
             fontSize: 24,
             color: Colors.white,
-            shadows: const [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+            shadows: const [
+              Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+            ],
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28), // Match Forum back button
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -100,10 +119,11 @@ class _MidwifeListScreenState extends State<MidwifeListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.person_outline, size: 70, color: Colors.pink.shade200), // Match Forum empty state style
+                          Icon(Icons.person_outline,
+                              size: 70, color: Colors.pink.shade200),
                           const SizedBox(height: 20),
                           Text(
-                            "No midwives found",
+                            "No active midwives found",
                             style: GoogleFonts.nunito(
                               fontSize: 20,
                               color: Colors.purple.shade800,
@@ -133,7 +153,6 @@ class _MidwifeListScreenState extends State<MidwifeListScreen> {
   }
 }
 
-// Midwife card widget
 class MidwifeCard extends StatelessWidget {
   final Midwife midwife;
 
@@ -142,16 +161,16 @@ class MidwifeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2, // Match Forum card elevation
+      elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Match Forum card shape
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.pink.shade100.withOpacity(0.5), // Match Forum shadow
+              color: Colors.pink.shade100.withOpacity(0.5),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -165,22 +184,20 @@ class MidwifeCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    midwife.name,
-                    style: GoogleFonts.nunito(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple.shade600, // Adjusted to match theme
-                    ),
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage(midwife.photo),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green, // Static for now, adjust if dynamic
+                      // Green if available (1), red if unavailable (0)
+                      color: midwife.availability == 1 ? Colors.green : Colors.red,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      "Available",
+                      midwife.availability == 1 ? "Available" : "Unavailable",
                       style: GoogleFonts.nunito(
                         color: Colors.white,
                         fontSize: 12,
@@ -191,16 +208,28 @@ class MidwifeCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
+                midwife.name,
+                style: GoogleFonts.nunito(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple.shade600,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
                 "Location: ${midwife.location}",
-                style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600), // Match Forum subtitle
+                style: GoogleFonts.nunito(
+                    fontSize: 16, color: Colors.grey.shade600),
               ),
               Text(
                 "About: ${midwife.bio}",
-                style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
+                style: GoogleFonts.nunito(
+                    fontSize: 16, color: Colors.grey.shade600),
               ),
               Text(
                 "Contact: ${midwife.contact}",
-                style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
+                style: GoogleFonts.nunito(
+                    fontSize: 16, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 12),
               Row(
@@ -210,29 +239,38 @@ class MidwifeCard extends StatelessWidget {
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (context) => MidwifeDetailsDialog(midwife: midwife),
+                        builder: (context) =>
+                            MidwifeDetailsDialog(midwife: midwife),
                       );
                     },
                     child: Text(
                       "View Details",
                       style: GoogleFonts.nunito(
-                        color: Colors.purple.shade600, // Match theme
+                        color: Colors.purple.shade600,
                         fontSize: 14,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Booking ${midwife.name}...")),
-                      );
-                    },
+                    onPressed: midwife.availability == 1
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    Fromdate(midwifeId: midwife.id),
+                              ),
+                            );
+                          }
+                        : null, // Disable button if unavailable (0)
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink.shade300, // Match Forum button
+                      backgroundColor: Colors.pink.shade300,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       elevation: 2,
                     ),
                     child: Text(
@@ -254,7 +292,6 @@ class MidwifeCard extends StatelessWidget {
   }
 }
 
-// Details dialog
 class MidwifeDetailsDialog extends StatelessWidget {
   final Midwife midwife;
 
@@ -263,15 +300,11 @@ class MidwifeDetailsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Match card shape
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.white,
-      title: Text(
-        midwife.name,
-        style: GoogleFonts.nunito(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-          color: Colors.purple.shade600, // Match theme
-        ),
+      title: CircleAvatar(
+        radius: 75,
+        backgroundImage: NetworkImage(midwife.photo),
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -279,23 +312,36 @@ class MidwifeDetailsDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
+              midwife.name,
+              style: GoogleFonts.nunito(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.purple.shade600,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
               "Location: ${midwife.location}",
-              style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600), // Match Forum text
+              style:
+                  GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 8),
             Text(
               "About: ${midwife.bio}",
-              style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
+              style:
+                  GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 8),
             Text(
               "Contact: ${midwife.contact}",
-              style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
+              style:
+                  GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 8),
             Text(
-              "Status: Available", // Static for now
-              style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
+              "Status: ${midwife.availability == 1 ? 'Available' : 'Unavailable'}",
+              style:
+                  GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -306,7 +352,7 @@ class MidwifeDetailsDialog extends StatelessWidget {
           child: Text(
             "Close",
             style: GoogleFonts.nunito(
-              color: Colors.purple.shade600, // Match theme
+              color: Colors.purple.shade600,
               fontSize: 14,
             ),
           ),

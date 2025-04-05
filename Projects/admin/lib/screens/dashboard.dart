@@ -1,6 +1,9 @@
 import 'package:admin/screens/account.dart';
 import 'package:admin/screens/district.dart';
+import 'package:admin/screens/midwife_appoin.dart';
+import 'package:admin/screens/midwife_verification.dart';
 import 'package:admin/screens/place.dart';
+import 'package:admin/screens/userbooking.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -17,18 +20,27 @@ class _DashboardState extends State<Dashboard> {
     'Account',
     'District',
     'Place',
+    'midwife \n verification',
+    'appoinments',
+    'booking',
   ];
 
   List<IconData> pageIcon = [
     Icons.account_circle,
     Icons.location_city,
     Icons.place,
+    Icons.verified_user,
+    Icons.calendar_today,
+    Icons.book,
   ];
 
   List<Widget> pageContent = [
     Home(),
     District(),
     Place(),
+    MidwifeVerify(),
+    MidwifeAppoin(),
+    AdminBookingsScreen(),
   ];
 
   @override

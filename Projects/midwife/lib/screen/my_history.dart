@@ -160,13 +160,3 @@ class _PreviousPatientsScreenState extends State<PreviousPatientsScreen> {
     );
   }
 }
-
-void main() {
-  runApp(MaterialApp(
-    home: const PreviousPatientsScreen(),
-    theme: ThemeData(
-      primarySwatch: Colors.teal,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
-    ),
-  ));
-}

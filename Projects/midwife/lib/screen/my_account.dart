@@ -16,8 +16,8 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
   String about = "";
   String contact = "";
   String address = "";
-  String initial = "";
-  String image ='';
+  String image = '';
+
   Future<void> fetchMidwife() async {
     try {
       String uid = supabase.auth.currentUser!.id;
@@ -29,28 +29,11 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
         contact = response['midwife_contact'];
         address = response['midwife_address'];
         image = response['midwife_photo'];
-
-
       });
-      // getInitials(response['midwife_name']);
     } catch (e) {
       print("Midwife not found: $e");
     }
   }
-
-  // void getInitials(String name) {
-  //   String initials = '';
-  //   if (name.isNotEmpty) {
-  //     List<String> nameParts = name.split(' ');
-  //     initials += nameParts[0][0];
-  //     if (nameParts.length > 1) {
-  //       initials += nameParts[1][0];
-  //     }
-  //   }
-  //   setState(() {
-  //     initial = initials.toUpperCase();
-  //   });
-  // }
 
   @override
   void initState() {
@@ -63,6 +46,7 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
+        backgroundColor: Colors.purple.shade700, // Match MidwifeLogin AppBar
         leading: IconButton(
           onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
@@ -77,16 +61,6 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.teal.shade600,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.teal.shade600, Colors.teal.shade400],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
@@ -98,7 +72,7 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                     "Logged out successfully",
                     style: GoogleFonts.nunito(color: Colors.white),
                   ),
-                  backgroundColor: Colors.teal.shade600,
+                  backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -107,36 +81,21 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
         ],
       ),
       body: Container(
-        color: Colors.grey.shade100,
+        color: Colors.white, // Match MidwifeLogin card background
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header Section (Unchanged)
+              // Header Section
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.teal.shade600, Colors.teal.shade400],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
-                ),
+                color: Colors.purple.shade700, // Match MidwifeLogin AppBar
                 child: Column(
                   children: [
                     CircleAvatar(
                       radius: 80,
-                      backgroundColor: Colors.white.withOpacity(0.9),
+                      backgroundColor: Colors.purple.shade100.withOpacity(0.9), // Subtle purple tint
                       backgroundImage: NetworkImage(image),
-                      // // child: Text(
-                      // //   initial,
-                      // //   style: GoogleFonts.nunito(
-                      // //     fontSize: 36,
-                      // //     fontWeight: FontWeight.bold,
-                      // //     color: Colors.teal.shade700,
-                      // //   ),
-                      // ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -155,7 +114,7 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                   ],
                 ),
               ),
-              // Profile Fields and Buttons (Redesigned)
+              // Profile Fields and Buttons
               Container(
                 constraints: const BoxConstraints(maxWidth: 600),
                 padding: const EdgeInsets.all(24),
@@ -167,7 +126,7 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                       style: GoogleFonts.nunito(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.teal.shade700,
+                        color: Colors.purple.shade700, // Match MidwifeLogin header
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -188,16 +147,15 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                                   "Edit Profile feature coming soon!",
                                   style: GoogleFonts.nunito(color: Colors.white),
                                 ),
-                                backgroundColor: Colors.teal.shade600,
+                                backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal.shade600,
+                            backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           child: Text(
                             "Edit Profile",
@@ -213,20 +171,19 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                                   "Change Password feature coming soon!",
                                   style: GoogleFonts.nunito(color: Colors.white),
                                 ),
-                                backgroundColor: Colors.teal.shade600,
+                                backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal.shade200,
+                            backgroundColor: Colors.purple.shade200, // Lighter purple for secondary action
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           child: Text(
                             "Change Password",
-                            style: GoogleFonts.nunito(fontSize: 16, color: Colors.teal.shade800),
+                            style: GoogleFonts.nunito(fontSize: 16, color: Colors.purple.shade800),
                           ),
                         ),
                       ],
@@ -242,15 +199,18 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
   }
 
   Widget buildProfileField(String label, String value, IconData icon) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)], // Match MidwifeLogin shadow
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: Colors.teal.shade600, size: 24),
+            Icon(icon, color: Colors.purple.shade700, size: 24), // Match MidwifeLogin theme
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -261,13 +221,13 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                     style: GoogleFonts.nunito(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.teal.shade700,
+                      color: Colors.purple.shade700, // Match MidwifeLogin header
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     value.isEmpty ? "Not provided" : value,
-                    style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade800),
+                    style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade700),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),
@@ -279,14 +239,4 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: const MidwifeAccount(),
-    theme: ThemeData(
-      primarySwatch: Colors.teal,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
-    ),
-  ));
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:user/main.dart';
+import 'package:user/screens/booking.dart';
 import 'package:user/screens/community/viewpost.dart';
 import 'package:user/screens/forum.dart';
 import 'package:user/screens/home_content.dart';
@@ -20,7 +21,8 @@ class _HomeState extends State<Home> {
   Future<void> fetchUser() async {
     try {
       String uid = supabase.auth.currentUser!.id;
-      final response = await supabase.from("tbl_user").select().eq('id', uid).single();
+      final response =
+          await supabase.from("tbl_user").select().eq('id', uid).single();
       setState(() {
         name = response['user_name'] ?? "";
       });
@@ -69,13 +71,15 @@ class _HomeState extends State<Home> {
           children: [
             GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAccount()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const MyAccount()));
               },
               child: Column(
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: Colors.purple.shade100.withOpacity(0.2), // Softer purple
+                    backgroundColor: Colors.purple.shade100
+                        .withOpacity(0.2), // Softer purple
                     child: Text(
                       getInitials(name),
                       style: GoogleFonts.nunito(
@@ -87,9 +91,12 @@ class _HomeState extends State<Home> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    name.isEmpty ? "Mama-to-Be" : name, // Pregnancy-friendly default
+                    name.isEmpty
+                        ? "Mama-to-Be"
+                        : name, // Pregnancy-friendly default
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.pacifico( // Nurturing font
+                    style: GoogleFonts.pacifico(
+                      // Nurturing font
                       fontSize: 24,
                       color: Colors.purple.shade800,
                     ),
@@ -99,18 +106,26 @@ class _HomeState extends State<Home> {
             ),
             const SizedBox(height: 20),
             _buildDrawerItem(Icons.favorite, "My Journey", () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAccount()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const MyAccount()));
             }),
             _buildDrawerItem(Icons.chat_bubble_outline, "Pregnancy Q&A", () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const Forum()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Forum()));
             }),
             _buildDrawerItem(Icons.photo_camera, "Moments", () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const Viewpost()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Viewpost()));
+            }),
+            _buildDrawerItem(Icons.person, "My midwife", () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Booking()));
             }),
             _buildDrawerItem(Icons.help_outline, "Support", () {}),
             _buildDrawerItem(Icons.logout, "Log Out", () async {
               await supabase.auth.signOut();
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const Home()));
             }),
           ],
         ),
@@ -120,7 +135,10 @@ class _HomeState extends State<Home> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.pink.shade200, Colors.purple.shade200], // Pregnancy theme gradient
+              colors: [
+                Colors.pink.shade200,
+                Colors.purple.shade200
+              ], // Pregnancy theme gradient
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -131,20 +149,26 @@ class _HomeState extends State<Home> {
           style: GoogleFonts.pacifico(
             fontSize: 24,
             color: Colors.white,
-            shadows: const [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+            shadows: const [
+              Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+            ],
           ),
         ),
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const MidwifeListScreen()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const MidwifeListScreen()));
             },
             icon: const Icon(Icons.search, color: Colors.white, size: 28),
             tooltip: 'Find a Midwife',
           ),
           IconButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyAccount()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const MyAccount()));
             },
             icon: const Icon(Icons.person, color: Colors.white, size: 28),
             tooltip: 'My Journey',
@@ -187,7 +211,8 @@ class _HomeState extends State<Home> {
 
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: Colors.purple.shade600, size: 24), // Theme color
+      leading:
+          Icon(icon, color: Colors.purple.shade600, size: 24), // Theme color
       title: Text(
         title,
         style: GoogleFonts.nunito(

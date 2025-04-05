@@ -29,8 +29,8 @@ class _RegisterState extends State<Register> {
   final TextEditingController _confirmPassword = TextEditingController();
 
   String _gender = "Male";
-  String? _district; // District name
-  String? _place;   // Place ID
+  String? _district;
+  String? _place;
   List<Map<String, dynamic>> placelist = [];
   List<Map<String, dynamic>> distList = [];
   PlatformFile? _pickedImage;
@@ -41,7 +41,7 @@ class _RegisterState extends State<Register> {
   @override
   void initState() {
     super.initState();
-    fetchdistrict(); // Fetch districts on initialization
+    fetchdistrict();
   }
 
   Future<void> fetchplace(String districtId) async {
@@ -52,7 +52,7 @@ class _RegisterState extends State<Register> {
       });
     } catch (e) {
       print('Error fetching place: $e');
-       }
+    }
   }
 
   Future<void> fetchdistrict() async {
@@ -63,7 +63,6 @@ class _RegisterState extends State<Register> {
       });
     } catch (e) {
       print('Error fetching district: $e');
-      
     }
   }
 
@@ -95,7 +94,7 @@ class _RegisterState extends State<Register> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: ColorScheme.light(
-              primary: Colors.teal.shade600,
+              primary: Colors.purple.shade700, // Match MidwifeLogin
               onPrimary: Colors.white,
               surface: Colors.white,
               onSurface: Colors.black,
@@ -127,7 +126,7 @@ class _RegisterState extends State<Register> {
 
       return supabase.storage.from('midwife').getPublicUrl(filePath);
     } catch (e) {
-      print("image Error: $e");
+      print("Image Error: $e");
       return null;
     }
   }
@@ -172,9 +171,12 @@ class _RegisterState extends State<Register> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registration successful!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: Text(
+              'Registration successful!',
+              style: GoogleFonts.nunito(color: Colors.white),
+            ),
+            backgroundColor: Colors.green, // Match MidwifeLogin success
           ),
         );
         Navigator.pushReplacement(
@@ -184,6 +186,15 @@ class _RegisterState extends State<Register> {
       }
     } catch (e) {
       print('Error registering: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Registration failed: $e',
+            style: GoogleFonts.nunito(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.shade600, // Match MidwifeLogin error
+        ),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -192,7 +203,7 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal.shade50,
+      backgroundColor: Colors.pink.shade50, // Match overall theme
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
@@ -203,120 +214,114 @@ class _RegisterState extends State<Register> {
         title: Text(
           "Become a Midwife",
           style: GoogleFonts.nunito(
-            fontSize: 26,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.teal.shade600,
+        backgroundColor: Colors.purple.shade700, // Match MidwifeLogin
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body: Center(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.teal.shade200.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Support Mothers Every Step of the Way",
-                        style: GoogleFonts.nunito(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal.shade800,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildTextField("Full Name", _name, Icons.person),
-                      _buildTextField("Email", _email, Icons.email),
-                      _buildTextField("Contact Number", _contact, Icons.phone),
-                      _buildTextField("Address", _address, Icons.location_on),
-                      _buildDropdownField(
-                        "District",
-                        _district,
-                        distList.map((d) => d['district_name'] as String).toList(),
-                        (value) {
-                          setState(() {
-                            _district = value;
-                            _place = null; // Reset place when district changes
-                            final selectedDistrict = distList.firstWhere((d) => d['district_name'] == value);
-                            fetchplace(selectedDistrict['id'].toString());
-                          });
-                        },
-                      ),
-                      _buildDropdownField(
-                        "Place",
-                        _place != null
-                            ? placelist.firstWhere((p) => p['id'].toString() == _place, orElse: () => {'place_name': ''})['place_name'] as String?
-                            : null,
-                        placelist.map((p) => p['place_name'] as String).toList(),
-                        (value) {
-                          setState(() {
-                            _place = placelist.firstWhere((p) => p['place_name'] == value)['id'].toString();
-                          });
-                        },
-                        enabled: _district != null && placelist.isNotEmpty,
-                      ),
-                      _buildDateField("Date of Birth", _dob),
-                      _buildTextField("About Me", _aboutMe, Icons.info, maxLines: 3),
-                      _buildGenderSelection(),
-                      _buildFilePicker("Profile Photo", _pickedImage, _handleImagePick),
-                      _buildFilePicker("Certification Proof", _pickedProof, _handleProofPick),
-                      _buildPasswordField("Password", _password, _isObscure1, () => setState(() => _isObscure1 = !_isObscure1)),
-                      _buildPasswordField("Confirm Password", _confirmPassword, _isObscure2, () => setState(() => _isObscure2 = !_isObscure2)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 5,
-                    textStyle: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text("Register as Midwife"),
-                ),
-                const SizedBox(height: 15),
-                TextButton(
-                  onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MidwifeLogin())),
-                  child: Text(
-                    "Already a midwife? Login here",
+            child: Container(
+              width: 380, // Match MidwifeLogin container width
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12), // Match MidwifeLogin
+                boxShadow: [
+                  BoxShadow(color: Colors.black26, blurRadius: 10), // Match MidwifeLogin
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Support Mothers Every Step of the Way",
                     style: GoogleFonts.nunito(
-                      fontSize: 16,
-                      color: Colors.teal.shade800,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade700, // Match MidwifeLogin
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField("Full Name", _name, Icons.person),
+                  _buildTextField("Email", _email, Icons.email),
+                  _buildTextField("Contact Number", _contact, Icons.phone),
+                  _buildTextField("Address", _address, Icons.location_on),
+                  _buildDropdownField(
+                    "District",
+                    _district,
+                    distList.map((d) => d['district_name'] as String).toList(),
+                    (value) {
+                      setState(() {
+                        _district = value;
+                        _place = null;
+                        final selectedDistrict = distList.firstWhere((d) => d['district_name'] == value);
+                        fetchplace(selectedDistrict['id'].toString());
+                      });
+                    },
+                  ),
+                  _buildDropdownField(
+                    "Place",
+                    _place != null
+                        ? placelist.firstWhere((p) => p['id'].toString() == _place, orElse: () => {'place_name': ''})['place_name'] as String?
+                        : null,
+                    placelist.map((p) => p['place_name'] as String).toList(),
+                    (value) {
+                      setState(() {
+                        _place = placelist.firstWhere((p) => p['place_name'] == value)['id'].toString();
+                      });
+                    },
+                    enabled: _district != null && placelist.isNotEmpty,
+                  ),
+                  _buildDateField("Date of Birth", _dob),
+                  _buildTextField("About Me", _aboutMe, Icons.info, maxLines: 3),
+                  _buildGenderSelection(),
+                  _buildFilePicker("Profile Photo", _pickedImage, _handleImagePick),
+                  _buildFilePicker("Certification Proof", _pickedProof, _handleProofPick),
+                  _buildPasswordField("Password", _password, _isObscure1, () => setState(() => _isObscure1 = !_isObscure1)),
+                  _buildPasswordField("Confirm Password", _confirmPassword, _isObscure2, () => setState(() => _isObscure2 = !_isObscure2)),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _register,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple.shade700, // Match MidwifeLogin
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), // Match MidwifeLogin
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : Text(
+                            "Register as Midwife",
+                            style: GoogleFonts.nunito(fontSize: 18),
+                          ),
+                  ),
+                  const SizedBox(height: 15),
+                  TextButton(
+                    onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MidwifeLogin())),
+                    child: Text(
+                      "Already a midwife? Login here",
+                      style: GoogleFonts.nunito(
+                        fontSize: 16,
+                        color: Colors.purple.shade700, // Match MidwifeLogin
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -326,82 +331,72 @@ class _RegisterState extends State<Register> {
 
   Widget _buildTextField(String label, TextEditingController controller, IconData icon, {int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 15),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
-          prefixIcon: Icon(icon, color: Colors.teal.shade600),
+          labelStyle: GoogleFonts.nunito(color: Colors.purple.shade700), // Match MidwifeLogin
+          prefixIcon: Icon(icon, ), // Match MidwifeLogin
           filled: true,
-          fillColor: Colors.teal.shade50,
+          fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade200),
+            borderRadius: BorderRadius.circular(12), // Match MidwifeLogin
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
-          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         ),
         validator: (value) => value!.isEmpty ? "Please enter $label" : null,
+        style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey[800]), // Match overall theme
       ),
     );
   }
 
   Widget _buildDateField(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 15),
       child: TextFormField(
         controller: controller,
         readOnly: true,
         onTap: _handleDatePick,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
-          prefixIcon: Icon(Icons.calendar_today, color: Colors.teal.shade600),
+          labelStyle: GoogleFonts.nunito(color: Colors.purple.shade700), // Match MidwifeLogin
+          prefixIcon: Icon(Icons.calendar_today, ), // Match MidwifeLogin
           filled: true,
-          fillColor: Colors.teal.shade50,
+          fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade200),
+            borderRadius: BorderRadius.circular(12), // Match MidwifeLogin
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
-          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         ),
         validator: (value) => value!.isEmpty ? "Please select $label" : null,
+        style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey[800]), // Match overall theme
       ),
     );
   }
 
   Widget _buildDropdownField(String label, String? value, List<String> items, ValueChanged<String?> onChanged, {bool enabled = true}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 15),
       child: DropdownButtonFormField<String>(
         value: value,
         items: items.map((String item) {
           return DropdownMenuItem<String>(
             value: item,
-            child: Text(item, style: GoogleFonts.nunito(fontSize: 16, color: Colors.teal.shade800)),
+            child: Text(item, style: GoogleFonts.nunito(fontSize: 16, color: Colors.purple.shade700)), // Match MidwifeLogin
           );
         }).toList(),
         onChanged: enabled ? onChanged : null,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
+          labelStyle: GoogleFonts.nunito(color: Colors.purple.shade700), // Match MidwifeLogin
           filled: true,
-          fillColor: Colors.teal.shade50,
+          fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade200),
+            borderRadius: BorderRadius.circular(12), // Match MidwifeLogin
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
-          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         ),
         validator: (value) => value == null ? "Please select $label" : null,
       ),
@@ -410,13 +405,13 @@ class _RegisterState extends State<Register> {
 
   Widget _buildGenderSelection() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Gender",
-            style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.teal.shade700),
+            style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple.shade700), // Match MidwifeLogin
           ),
           const SizedBox(height: 8),
           Row(
@@ -430,9 +425,9 @@ class _RegisterState extends State<Register> {
                       value: option,
                       groupValue: _gender,
                       onChanged: (value) => setState(() => _gender = value!),
-                      activeColor: Colors.teal.shade600,
+                      activeColor: Colors.purple.shade700, // Match MidwifeLogin
                     ),
-                    Text(option, style: GoogleFonts.nunito(fontSize: 16, color: Colors.teal.shade800)),
+                    Text(option, style: GoogleFonts.nunito(fontSize: 16, color: Colors.purple.shade700)), // Match MidwifeLogin
                   ],
                 ),
               );
@@ -445,28 +440,25 @@ class _RegisterState extends State<Register> {
 
   Widget _buildPasswordField(String label, TextEditingController controller, bool isObscure, VoidCallback toggleVisibility) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 15),
       child: TextFormField(
         controller: controller,
         obscureText: isObscure,
         decoration: InputDecoration(
+          
           labelText: label,
-          labelStyle: GoogleFonts.nunito(color: Colors.teal.shade700),
-          prefixIcon: Icon(Icons.lock, color: Colors.teal.shade600),
+          labelStyle: GoogleFonts.nunito(color: Colors.purple.shade700), // Match MidwifeLogin
+          prefixIcon: Icon(Icons.lock,), // Match MidwifeLogin
           suffixIcon: IconButton(
-            icon: Icon(isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.teal.shade600),
+            icon: Icon(isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.purple.shade700), // Match MidwifeLogin
             onPressed: toggleVisibility,
           ),
           filled: true,
-          fillColor: Colors.teal.shade50,
+          fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade200),
+            borderRadius: BorderRadius.circular(12), // Match MidwifeLogin
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.teal.shade600, width: 2),
-          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -477,21 +469,22 @@ class _RegisterState extends State<Register> {
           }
           return null;
         },
+        style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey[800]), // Match overall theme
       ),
     );
   }
 
   Widget _buildFilePicker(String label, PlatformFile? file, VoidCallback onPick) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 15),
       child: GestureDetector(
         onTap: onPick,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.teal.shade50,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.teal.shade200),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12), // Match MidwifeLogin
+            border: Border.all(color: Colors.purple.shade200), // Subtle border
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -501,12 +494,12 @@ class _RegisterState extends State<Register> {
                   file != null ? file.name : label,
                   style: GoogleFonts.nunito(
                     fontSize: 16,
-                    color: file != null ? Colors.teal.shade800 : Colors.teal.shade700,
+                    color: file != null ? Colors.purple.shade700 : Colors.purple.shade700.withOpacity(0.7), // Match MidwifeLogin
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(Icons.upload, color: Colors.teal.shade600, size: 24),
+              Icon(Icons.upload, color: Colors.purple.shade700, size: 24), // Match MidwifeLogin
             ],
           ),
         ),

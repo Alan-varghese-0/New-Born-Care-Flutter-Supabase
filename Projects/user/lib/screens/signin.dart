@@ -79,6 +79,7 @@ class _SignUpState extends State<SignUp> {
         "user_pass": _passController.text, // Note: Avoid storing plaintext passwords
         "user_dob": _dobController.text,
         "user_address": _addressController.text.trim(),
+        "user_btype": selectedBlood,
       });
       print("Inserted");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,6 +110,8 @@ class _SignUpState extends State<SignUp> {
       );
     }
   }
+
+  String? selectedBlood;
 
   @override
   Widget build(BuildContext context) {
@@ -211,6 +214,68 @@ class _SignUpState extends State<SignUp> {
                   ),
                   const SizedBox(height: 20),
 
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16), // Match Forum text field
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.pink.shade100.withOpacity(0.5), // Match Forum shadow
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: DropdownButtonFormField(
+                      value: selectedBlood,
+                      items: [
+                      DropdownMenuItem(
+                        value: "A+",
+                        child: Text("A+"),
+                      ),
+                      DropdownMenuItem(
+                        value: "A-",
+                        child: Text("A-"),
+                      ),
+                      DropdownMenuItem(
+                        value: "B+",
+                        child: Text("B+"),
+                      ),
+                      DropdownMenuItem(
+                        value: "B-",
+                        child: Text("B-"),
+                      ),
+                      DropdownMenuItem(
+                        value: "O+",
+                        child: Text("O+"),
+                      ),
+                      DropdownMenuItem(
+                        value: "O-",
+                        child: Text("O-"),
+                      ),
+                      DropdownMenuItem(
+                        value: "AB+",
+                        child: Text("AB+"),
+                      ),
+                      DropdownMenuItem(
+                        value: "AB-",
+                        child: Text("AB-"),
+                      ),
+                    ], onChanged: (value){
+                      setState(() {
+                        selectedBlood = value;
+                      });
+                    },
+                     decoration: InputDecoration(
+                        hintText: "Select your blood type",
+                        hintStyle: GoogleFonts.nunito(color: Colors.purple.shade600), // Match theme
+                        prefixIcon: Icon(Icons.bloodtype, color: Colors.purple.shade600), // Match theme
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      ),
+                    )
+                  ),
+                  const SizedBox(height: 20),
                   // Email Field
                   Container(
                     decoration: BoxDecoration(

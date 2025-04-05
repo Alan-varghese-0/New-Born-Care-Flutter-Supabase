@@ -15,15 +15,15 @@ class _DuedateState extends State<Duedate> {
   final _formKey = GlobalKey<FormState>();
 
   Future<void> _selectDate(BuildContext context) async {
-    DateTime currentDate = DateTime.now();
-    DateTime minDate = currentDate
+     DateTime currentDate = DateTime.now();
+    DateTime maxDate = DateTime(currentDate.year - 2, currentDate.month, currentDate.day);
         ; // 18 years ago from today
 
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? minDate,
-      firstDate: DateTime(1900),
-      lastDate: minDate, // Set the last selectable date to 18 years ago
+      initialDate: _selectedDate ?? maxDate,
+      firstDate: maxDate,
+      lastDate: currentDate, // Set the last selectable date to 18 years ago
     );
 
     if (pickedDate != null && pickedDate != _selectedDate) {
