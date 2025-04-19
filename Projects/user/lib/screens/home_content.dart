@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:user/main.dart';
+import 'package:user/screens/audio.dart';
 import 'package:user/screens/breathing.dart';
 import 'package:user/screens/community/viewpost.dart';
 import 'package:user/screens/forum.dart';
@@ -122,6 +123,14 @@ class _HomeContentState extends State<HomeContent> {
                   icon: Icons.self_improvement,
                   color: Colors.teal.shade300,
                   screen: const BreathingExercise(),
+                ),
+                _buildFeatureTile(
+                  context,
+                  title: "just relax",
+                  subtitle: "Relaxation for you and baby",
+                  icon: Icons.self_improvement,
+                  color: Colors.teal.shade300,
+                  screen: const Audio(),
                 ),
               ],
             ),

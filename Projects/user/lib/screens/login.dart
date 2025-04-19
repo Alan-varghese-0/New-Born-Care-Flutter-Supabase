@@ -47,8 +47,9 @@ class _LoginState extends State<Login> {
                 "Email or password incorrect",
                 style: GoogleFonts.nunito(color: Colors.white),
               ),
-              backgroundColor: Colors.pink.shade300, // Match theme
+              backgroundColor: Colors.pink.shade400, // Match HomeContent
               behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -60,8 +61,9 @@ class _LoginState extends State<Login> {
               "An unexpected error occurred",
               style: GoogleFonts.nunito(color: Colors.white),
             ),
-            backgroundColor: Colors.pink.shade300, // Match theme
+            backgroundColor: Colors.pink.shade400, // Match HomeContent
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -71,12 +73,13 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.pink.shade50, // Match HomeContent background
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.pink.shade200, Colors.purple.shade200], // Match Forum gradient
+            colors: [Colors.pink.shade200, Colors.purple.shade200], // Match HomeContent gradient
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -93,19 +96,27 @@ class _LoginState extends State<Login> {
                   // Header
                   Text(
                     "Welcome Back!",
-                    style: GoogleFonts.nunito(
+                    style: GoogleFonts.pacifico(
                       fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple.shade800, // Match theme
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Log in to stay connected with your midwife",
+                    "Log in to nurture your journey",
                     style: GoogleFonts.nunito(
                       fontSize: 16,
-                      color: Colors.grey[600], // Match Forum subtitle
+                      color: Colors.white70, // Match HomeContent subtitle
+                      fontStyle: FontStyle.italic,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -115,10 +126,10 @@ class _LoginState extends State<Login> {
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16), // Match Forum text field
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.pink.shade100.withOpacity(0.5), // Match Forum shadow
+                          color: Colors.pink.shade100.withOpacity(0.5), // Match HomeContent shadow
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -129,13 +140,13 @@ class _LoginState extends State<Login> {
                       validator: (value) => FormValidation.validateEmail(value),
                       decoration: InputDecoration(
                         hintText: "Enter your email",
-                        hintStyle: GoogleFonts.nunito(color: Colors.purple.shade600), // Match theme
-                        prefixIcon: Icon(Icons.mail, color: Colors.purple.shade600), // Match theme
+                        hintStyle: GoogleFonts.nunito(color: Colors.purple.shade400), // Match HomeContent
+                        prefixIcon: Icon(Icons.mail, color: Colors.purple.shade400), // Match HomeContent
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                       ),
                       keyboardType: TextInputType.emailAddress,
-                      style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey[800]), // Match Forum text
+                      style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade800),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -144,10 +155,10 @@ class _LoginState extends State<Login> {
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16), // Match Forum text field
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.pink.shade100.withOpacity(0.5), // Match Forum shadow
+                          color: Colors.pink.shade100.withOpacity(0.5), // Match HomeContent shadow
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -159,12 +170,12 @@ class _LoginState extends State<Login> {
                       obscureText: _isObscure,
                       decoration: InputDecoration(
                         hintText: "Enter your password",
-                        hintStyle: GoogleFonts.nunito(color: Colors.purple.shade600), // Match theme
-                        prefixIcon: Icon(Icons.lock, color: Colors.purple.shade600), // Match theme
+                        hintStyle: GoogleFonts.nunito(color: Colors.purple.shade400), // Match HomeContent
+                        prefixIcon: Icon(Icons.lock, color: Colors.purple.shade400), // Match HomeContent
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isObscure ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.purple.shade600, // Match theme
+                            color: Colors.purple.shade400, // Match HomeContent
                           ),
                           onPressed: () {
                             setState(() {
@@ -176,7 +187,7 @@ class _LoginState extends State<Login> {
                         contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                       ),
                       keyboardType: TextInputType.visiblePassword,
-                      style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey[800]), // Match Forum text
+                      style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade800),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -185,19 +196,19 @@ class _LoginState extends State<Login> {
                   ElevatedButton(
                     onPressed: signIn,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink.shade300, // Match Forum button
+                      backgroundColor: Colors.pink.shade400, // Match HomeContent tile color
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // Match Forum button shape
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       minimumSize: const Size(double.infinity, 50),
-                      elevation: 2, // Match Forum button elevation
+                      elevation: 2,
                     ),
                     child: Text(
                       "Log In",
                       style: GoogleFonts.nunito(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600, // Match HomeContent
                         color: Colors.white,
                       ),
                     ),
@@ -212,7 +223,7 @@ class _LoginState extends State<Login> {
                         "Don’t have an account? ",
                         style: GoogleFonts.nunito(
                           fontSize: 14,
-                          color: Colors.grey[600], // Match Forum subtitle
+                          color: Colors.white70, // Match HomeContent subtitle
                         ),
                       ),
                       GestureDetector(
@@ -226,8 +237,8 @@ class _LoginState extends State<Login> {
                           "Sign Up",
                           style: GoogleFonts.nunito(
                             fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple.shade600, // Match theme
+                            fontWeight: FontWeight.w600,
+                            color: Colors.purple.shade400, // Match HomeContent
                           ),
                         ),
                       ),

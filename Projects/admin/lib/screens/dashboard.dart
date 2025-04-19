@@ -1,4 +1,6 @@
 import 'package:admin/screens/account.dart';
+import 'package:admin/screens/add_audio.dart';
+import 'package:admin/screens/audiocat.dart';
 import 'package:admin/screens/district.dart';
 import 'package:admin/screens/midwife_appoin.dart';
 import 'package:admin/screens/midwife_verification.dart';
@@ -20,8 +22,9 @@ class _DashboardState extends State<Dashboard> {
     'Account',
     'District',
     'Place',
+    'audio \n category',
+    'new audio',
     'midwife \n verification',
-    'appoinments',
     'booking',
   ];
 
@@ -29,8 +32,9 @@ class _DashboardState extends State<Dashboard> {
     Icons.account_circle,
     Icons.location_city,
     Icons.place,
+    Icons.headset_mic,
+    Icons.music_note_sharp,
     Icons.verified_user,
-    Icons.calendar_today,
     Icons.book,
   ];
 
@@ -38,8 +42,9 @@ class _DashboardState extends State<Dashboard> {
     Home(),
     District(),
     Place(),
+    Audiocat(),
+    AddAudio(),
     MidwifeVerify(),
-    MidwifeAppoin(),
     AdminBookingsScreen(),
   ];
 

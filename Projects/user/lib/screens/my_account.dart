@@ -4,6 +4,7 @@ import 'package:user/main.dart';
 import 'package:user/screens/change_pass.dart';
 import 'package:user/screens/edit_profile.dart';
 import 'package:user/screens/home.dart';
+import 'package:user/screens/login.dart';
 
 class MyAccount extends StatefulWidget {
   const MyAccount({super.key});
@@ -89,11 +90,17 @@ class _MyAccountState extends State<MyAccount> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white, size: 28),
-            tooltip: 'Log out',
-            onPressed: () async {
-              await supabase.auth.signOut();
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
+            icon: const Icon(Icons.login_outlined),
+            onPressed: () {
+              supabase.auth.signOut().then((value) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => Login()),
+                  (route) => false,
+                );
+              }).catchError((error) {
+                print("Error signing out: $error");
+              });
             },
           ),
         ],

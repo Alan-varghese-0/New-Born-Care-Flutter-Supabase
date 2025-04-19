@@ -17,7 +17,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     fetchBookings();
   }
 
@@ -41,42 +41,138 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen>
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching bookings: $e')),
+        SnackBar(
+          content: Text('Error fetching bookings: $e', style: TextStyle(color: Colors.white)),
+          backgroundColor: Color(0xFFD81B60),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
     }
   }
 
   Future<void> approveBooking(String bookingId, String mid) async {
     try {
-      await supabase.from('tbl_booking').update({'booking_status': 1}).eq('id', bookingId);
-await Future.wait([
-      // Update booking status to approved (1)
-      supabase
-          .from('tbl_booking')
-          .update({'booking_status': 1})
-          .eq('id', bookingId),
-      
-      // Update midwife to unavailable (1) since booking is approved
-      supabase
-          .from('tbl_midwife')
-          .update({'midwife_available': 0})  // Changed from 0 to 1
-          .eq('id', mid),
-    ]);      fetchBookings(); // Refresh the list
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Booking Approved!")));
+      final TextEditingController amountController = TextEditingController();
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Color(0xFF263238),
+          title: Text(
+            "Set Booking Amount",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Color(0xFFECEFF1),
+            ),
+          ),
+          content: TextField(
+            controller: amountController,
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
+            style: TextStyle(color: Color(0xFFECEFF1)),
+            decoration: InputDecoration(
+              labelText: "Booking Amount",
+              labelStyle: TextStyle(color: Color(0xFFECEFF1)),
+              hintText: "Enter amount (e.g., 100.00)",
+              hintStyle: TextStyle(color: Color(0xFFECEFF1).withOpacity(0.7)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Color(0xFFD81B60)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Color(0xFFD81B60), width: 2),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: Color(0xFFD81B60), fontSize: 14),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final amount = double.tryParse(amountController.text);
+                if (amount == null || amount < 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Please enter a valid non-negative amount"),
+                      backgroundColor: Color(0xFFD81B60),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 194, 170, 250),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                "Confirm",
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      final amount = double.parse(amountController.text);
+      await Future.wait([
+        supabase.from('tbl_booking').update({
+          'booking_status': 1,
+          'booking_amount': amount,
+        }).eq('id', bookingId),
+        supabase.from('tbl_midwife').update({
+          'midwife_available': 0,
+        }).eq('id', mid),
+      ]);
+
+      await fetchBookings();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Booking Approved with Amount \$${amount.toStringAsFixed(2)}"),
+          backgroundColor: Color.fromARGB(255, 194, 170, 250),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     } catch (e) {
       print("Error approving booking: $e");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to approve booking.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to approve booking: $e"),
+          backgroundColor: Color(0xFFD81B60),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
   }
 
   Future<void> rejectBooking(String bookingId) async {
     try {
       await supabase.from('tbl_booking').update({'booking_status': 2}).eq('id', bookingId);
-      fetchBookings(); // Refresh the list
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Booking Rejected!")));
+      await fetchBookings();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Booking Rejected!"),
+          backgroundColor: Color.fromARGB(255, 194, 170, 250),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     } catch (e) {
       print("Error rejecting booking: $e");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to reject booking.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to reject booking: $e"),
+          backgroundColor: Color(0xFFD81B60),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
     }
   }
 
@@ -88,8 +184,8 @@ await Future.wait([
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Manage Bookings"),
-        backgroundColor: const Color.fromARGB(255, 182, 152, 251), // Purple from previous design
+        title: Text("Manage Bookings"),
+        backgroundColor: Color.fromARGB(255, 182, 152, 251),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -99,11 +195,12 @@ await Future.wait([
             Tab(text: "New"),
             Tab(text: "Accepted"),
             Tab(text: "Rejected"),
+            Tab(text: "Cancelled"),
           ],
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD81B60)),
               ),
@@ -111,24 +208,27 @@ await Future.wait([
           : TabBarView(
               controller: _tabController,
               children: [
-                // New Bookings (status = 0)
                 BookingList(
                   bookings: getFilteredBookings(0),
-                  showActions: true, // Show Accept/Reject for new bookings
+                  showActions: true,
                   onApprove: approveBooking,
                   onReject: rejectBooking,
                 ),
-                // Accepted Bookings (status = 1)
                 BookingList(
                   bookings: getFilteredBookings(1),
-                  showActions: false, // No actions for accepted
+                  showActions: false,
                   onApprove: approveBooking,
                   onReject: rejectBooking,
                 ),
-                // Rejected Bookings (status = 2)
                 BookingList(
                   bookings: getFilteredBookings(2),
-                  showActions: false, // No actions for rejected
+                  showActions: false,
+                  onApprove: approveBooking,
+                  onReject: rejectBooking,
+                ),
+                BookingList(
+                  bookings: getFilteredBookings(3),
+                  showActions: false,
                   onApprove: approveBooking,
                   onReject: rejectBooking,
                 ),
@@ -138,7 +238,6 @@ await Future.wait([
   }
 }
 
-// Booking list widget
 class BookingList extends StatelessWidget {
   final List<Map<String, dynamic>> bookings;
   final bool showActions;
@@ -154,23 +253,24 @@ class BookingList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return RefreshIndicator(
+@override
+Widget build(BuildContext context) {
+      return RefreshIndicator(
       onRefresh: () async {
         await (context.findAncestorStateOfType<_AdminBookingsScreenState>())?.fetchBookings();
       },
-      color: const Color(0xFFD81B60), // Deep Pink
+      color: Color(0xFFD81B60),
       child: bookings.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.calendar_today_outlined,
                     size: 70,
                     color: Color(0xFFECEFF1),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Text(
                     "No bookings found",
                     style: TextStyle(
@@ -179,7 +279,7 @@ class BookingList extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Text(
                     "Check back later!",
                     style: TextStyle(
@@ -191,15 +291,15 @@ class BookingList extends StatelessWidget {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8),
               itemCount: bookings.length,
               itemBuilder: (context, index) {
                 final booking = bookings[index];
                 return BookingCard(
                   booking: booking,
                   showActions: showActions,
-                  onApprove: () => onApprove(booking['id'].toString(),booking['midwife_id'].toString()),
-                  onReject: () => onReject(booking['id'].toString()),
+                  onApprove: () => onApprove(booking['id']?.toString() ?? '', booking['midwife_id']?.toString() ?? ''),
+                  onReject: () => onReject(booking['id']?.toString() ?? ''),
                 );
               },
             ),
@@ -207,7 +307,6 @@ class BookingList extends StatelessWidget {
   }
 }
 
-// Booking card widget
 class BookingCard extends StatelessWidget {
   final Map<String, dynamic> booking;
   final bool showActions;
@@ -224,42 +323,63 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final status = booking['booking_status'] ?? 0;
+    final statusText = status == 0
+        ? "New"
+        : status == 1
+            ? "Accepted"
+            : status == 2
+                ? "Rejected"
+                : "Cancelled";
+    final amount = booking['booking_amount'] != null
+        ? double.tryParse(booking['booking_amount'].toString())
+        : null;
+
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: const Color(0xFF263238), // Dark Grayish Blue
+      color: Color(0xFF263238),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "Booking #NBCOD000${booking['id'] ?? 'N/A'}",
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFFECEFF1),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(
               "User: ${booking['tbl_user']?['user_name'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
             Text(
               "Midwife: ${booking['tbl_midwife']?['midwife_name'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
             Text(
               "From: ${booking['booking_fromdate'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
             Text(
               "To: ${booking['booking_enddate'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
-            const SizedBox(height: 12),
+            Text(
+              "Status: $statusText",
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+            ),
+            if (status == 1)
+              Text(
+                "Amount: ${amount != null ? '\$${amount.toStringAsFixed(2)}' : 'N/A'}",
+                style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              ),
+            SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -267,10 +387,10 @@ class BookingCard extends StatelessWidget {
                   ElevatedButton(
                     onPressed: onApprove,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 194, 170, 250),
+                      backgroundColor: Color.fromARGB(255, 194, 170, 250),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Accept",
                       style: TextStyle(
                         fontSize: 16,
@@ -279,14 +399,14 @@ class BookingCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: onReject,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 194, 170, 250),
+                      backgroundColor: Color.fromARGB(255, 194, 170, 250),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Reject",
                       style: TextStyle(
                         fontSize: 16,
@@ -295,7 +415,7 @@ class BookingCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                 ],
                 TextButton(
                   onPressed: () {
@@ -304,7 +424,7 @@ class BookingCard extends StatelessWidget {
                       builder: (context) => BookingDetailsDialog(booking: booking),
                     );
                   },
-                  child: const Text(
+                  child: Text(
                     "View Details",
                     style: TextStyle(
                       color: Color(0xFFD81B60),
@@ -321,7 +441,6 @@ class BookingCard extends StatelessWidget {
   }
 }
 
-// Booking details dialog
 class BookingDetailsDialog extends StatelessWidget {
   final Map<String, dynamic> booking;
 
@@ -329,10 +448,22 @@ class BookingDetailsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final status = booking['booking_status'] ?? 0;
+    final statusText = status == 0
+        ? "New"
+        : status == 1
+            ? "Accepted"
+            : status == 2
+                ? "Rejected"
+                : "Cancelled";
+    final amount = booking['booking_amount'] != null
+        ? double.tryParse(booking['booking_amount'].toString())
+        : null;
+
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      backgroundColor: const Color(0xFF263238),
-      title: const Text(
+      backgroundColor: Color(0xFF263238),
+      title: Text(
         "Booking Details",
         style: TextStyle(
           fontWeight: FontWeight.bold,
@@ -347,35 +478,45 @@ class BookingDetailsDialog extends StatelessWidget {
           children: [
             Text(
               "Booking ID: ${booking['id'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               "User: ${booking['tbl_user']?['user_name'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               "Midwife: ${booking['tbl_midwife']?['midwife_name'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               "From Date: ${booking['booking_fromdate'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               "End Date: ${booking['booking_enddate'] ?? 'N/A'}",
-              style: const TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
             ),
+            SizedBox(height: 8),
+            Text(
+              "Status: $statusText",
+              style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+            ),
+            if (status == 1)
+              Text(
+                "Amount: ${amount != null ? '\$${amount.toStringAsFixed(2)}' : 'N/A'}",
+                style: TextStyle(fontSize: 16, color: Color(0xFFECEFF1)),
+              ),
           ],
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(
+          child: Text(
             "Close",
             style: TextStyle(
               color: Color(0xFFD81B60),

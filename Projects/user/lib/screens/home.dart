@@ -5,6 +5,7 @@ import 'package:user/screens/booking.dart';
 import 'package:user/screens/community/viewpost.dart';
 import 'package:user/screens/forum.dart';
 import 'package:user/screens/home_content.dart';
+import 'package:user/screens/login.dart';
 import 'package:user/screens/my_account.dart';
 import 'package:user/screens/search.dart';
 
@@ -125,7 +126,8 @@ class _HomeState extends State<Home> {
             _buildDrawerItem(Icons.logout, "Log Out", () async {
               await supabase.auth.signOut();
               Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const Home()));
+                  MaterialPageRoute(builder: (context) => const Login()));
+                  
             }),
           ],
         ),
