@@ -106,18 +106,6 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 20),
-            _buildDrawerItem(Icons.favorite, "My Journey", () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const MyAccount()));
-            }),
-            _buildDrawerItem(Icons.chat_bubble_outline, "Pregnancy Q&A", () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const Forum()));
-            }),
-            _buildDrawerItem(Icons.photo_camera, "Moments", () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const Viewpost()));
-            }),
             _buildDrawerItem(Icons.person, "My midwife", () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => const Booking()));

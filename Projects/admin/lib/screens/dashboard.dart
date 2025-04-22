@@ -2,7 +2,6 @@ import 'package:admin/screens/account.dart';
 import 'package:admin/screens/add_audio.dart';
 import 'package:admin/screens/audiocat.dart';
 import 'package:admin/screens/district.dart';
-import 'package:admin/screens/midwife_appoin.dart';
 import 'package:admin/screens/midwife_verification.dart';
 import 'package:admin/screens/place.dart';
 import 'package:admin/screens/userbooking.dart';

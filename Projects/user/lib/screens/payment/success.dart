@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:lottie/lottie.dart';
-import 'package:user/screens/home_content.dart';
+import 'package:user/screens/home.dart';
 
 class PaymentSuccessPage extends StatefulWidget {
   @override
@@ -36,7 +36,7 @@ class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
       context,
       MaterialPageRoute(
           builder: (context) =>
-              HomeContent()), // Replace `HomePage` with your actual homepage widget
+              Home()), // Replace `HomePage` with your actual homepage widget
       (Route<dynamic> route) => false, // Remove all routes
     );
   }

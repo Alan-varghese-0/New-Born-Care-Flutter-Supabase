@@ -6,13 +6,19 @@ class Health {
   final String bp;
   final String weight;
   final String sugar;
-  final String? history; // Added for pregnancy history
-  final String? conditions; // Added for known conditions
 
   Health({
     required this.bp,
     required this.weight,
     required this.sugar,
+  });
+}
+
+class PatientDetails {
+  final String? history;
+  final String? conditions;
+
+  PatientDetails({
     this.history,
     this.conditions,
   });
@@ -27,7 +33,8 @@ class AssignedPatientDetails extends StatefulWidget {
 
 class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
   List<dynamic> patients = [];
-  Map<int, List<Health>> healthData = {}; // Map booking ID to health records
+  Map<int, List<Health>> healthData = {};
+  Map<int, List<PatientDetails>> patientDetailsData = {};
   bool isLoading = true;
   bool isEditingHealth = false;
   bool isEditingHistory = false;
@@ -47,16 +54,17 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
       final List<dynamic> response = await supabase
           .from("tbl_booking")
           .select("*, tbl_user(*)")
-          .eq("midwife_id", userId);
+          .eq("midwife_id", userId)
+          .eq("booking_status", 3);
 
       setState(() {
         patients = response;
         isLoading = false;
       });
 
-      // Fetch health data for each booking
       for (var patient in patients) {
         await fetchHealthData(patient['id']);
+        await fetchPatientDetailsData(patient['id']);
       }
     } catch (e) {
       setState(() => isLoading = false);
@@ -79,15 +87,36 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
             bp: data['user_bp']?.toString() ?? 'N/A',
             weight: data['user_weight']?.toString() ?? 'N/A',
             sugar: data['user_bsugar']?.toString() ?? 'N/A',
-            history: data['user_history']?.toString(), // Populate history
-            conditions: data['user_condition']?.toString(), // Populate conditions
           );
         }).toList();
       });
     } catch (e) {
       print("Error fetching health data for booking $bookingId: $e");
       setState(() {
-        healthData[bookingId] = []; // Empty list on error
+        healthData[bookingId] = [];
+      });
+    }
+  }
+
+  Future<void> fetchPatientDetailsData(int bookingId) async {
+    try {
+      final response = await supabase
+          .from("tbl_pdetails")
+          .select()
+          .eq("booking_id", bookingId);
+
+      setState(() {
+        patientDetailsData[bookingId] = (response as List<dynamic>).map((data) {
+          return PatientDetails(
+            history: data['user_history']?.toString(),
+            conditions: data['user_conditions']?.toString(),
+          );
+        }).toList();
+      });
+    } catch (e) {
+      print("Error fetching patient details for booking $bookingId: $e");
+      setState(() {
+        patientDetailsData[bookingId] = [];
       });
     }
   }
@@ -100,7 +129,7 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
         'user_weight': _weightController.text,
         'user_bsugar': _sugarController.text,
       });
-      await fetchHealthData(bookingId); // Refresh health data for this booking
+      await fetchHealthData(bookingId);
       setState(() => isEditingHealth = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Health info inserted successfully")),
@@ -114,19 +143,19 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
 
   Future<void> updatePregnancyHistory(int bookingId) async {
     try {
-      await supabase.from('tbl_health').update({
+      await supabase.from('tbl_pdetails').insert({
+        'booking_id': bookingId,
         'user_history': _historyController.text,
         'user_condition': _conditionsController.text,
-      }).eq('booking_id', bookingId); // Use booking_id instead of id
-      
-      await fetchHealthData(bookingId); // Refresh health data
+      });
+      await fetchPatientDetailsData(bookingId);
       setState(() => isEditingHistory = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pregnancy history updated successfully")),
+        const SnackBar(content: Text("Pregnancy history inserted successfully")),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error updating pregnancy history: $e")),
+        SnackBar(content: Text("Error inserting pregnancy history: $e")),
       );
     }
   }
@@ -169,7 +198,7 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
             : patients.isEmpty
                 ? Center(
                     child: Text(
-                      "No assigned patients found",
+                      "No assigned patients with confirmed bookings found",
                       style: GoogleFonts.nunito(fontSize: 18, color: Colors.grey),
                     ),
                   )
@@ -192,8 +221,6 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
                           const SizedBox(height: 10),
                           _buildPregnancyHistory(booking),
                           const SizedBox(height: 25),
-                          
-                          
                         ],
                       );
                     },
@@ -234,9 +261,9 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
                     style: GoogleFonts.nunito(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.cake, "Age: ${patient['user_dob'] ?? 'N/A'}"),
-                  _buildInfoRow(Icons.water_drop, "blood: ${patient['user_btype'] ?? 'N/A'}"),
-                  _buildInfoRow(Icons.calendar_today, "Due: ${patient['user_pdate'] ?? 'N/A'}"),
+                  _buildInfoRow(Icons.cake, "Date of birth: ${patient['user_dob'] ?? 'N/A'}"),
+                  _buildInfoRow(Icons.water_drop, "Blood: ${patient['user_btype'] ?? 'N/A'}"),
+                  _buildInfoRow(Icons.calendar_today, "Due date: ${patient['user_pdate'] ?? 'N/A'}"),
                   _buildInfoRow(Icons.phone, "Contact: ${patient['user_contact'] ?? 'N/A'}"),
                 ],
               ),
@@ -288,7 +315,7 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
       _bpController.text = latestHealth?.bp ?? '';
       _weightController.text = latestHealth?.weight ?? '';
       _sugarController.text = latestHealth?.sugar ?? '';
-      
+
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -365,43 +392,101 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
   }
 
   Widget _buildPregnancyHistory(Map<String, dynamic> booking) {
-    final healthRecords = healthData[booking['id']] ?? [];
-    final latestHealth = healthRecords.isNotEmpty ? healthRecords.last : null;
+    final detailsRecords = patientDetailsData[booking['id']] ?? [];
+    final latestDetails = detailsRecords.isNotEmpty ? detailsRecords.last : null;
 
     if (isEditingHistory) {
-      _historyController.text = latestHealth?.history ?? '';
-      _conditionsController.text = latestHealth?.conditions ?? '';
-      
+      _historyController.text = latestDetails?.history ?? '';
+      _conditionsController.text = latestDetails?.conditions ?? '';
+
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))],
+          gradient: LinearGradient(
+            colors: [Colors.purple.shade100, Colors.purple.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
+          ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              "Edit Pregnancy History",
+              style: GoogleFonts.nunito(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.purple.shade800,
+              ),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _historyController,
-              decoration: const InputDecoration(labelText: "Pregnancy History"),
-              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Pregnancy History",
+                labelStyle: GoogleFonts.nunito(color: Colors.purple.shade600),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.purple.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.purple.shade700, width: 2),
+                ),
+              ),
+              maxLines: 4,
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: _conditionsController,
-              decoration: const InputDecoration(labelText: "Known Conditions"),
-              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Known Conditions",
+                labelStyle: GoogleFonts.nunito(color: Colors.purple.shade600),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.purple.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.purple.shade700, width: 2),
+                ),
+              ),
+              maxLines: 4,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
+                ElevatedButton(
                   onPressed: () => setState(() => isEditingHistory = false),
-                  child: const Text("Cancel"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade300,
+                    foregroundColor: Colors.grey.shade800,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  child: Text(
+                    "Cancel",
+                    style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
+                const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: () => updatePregnancyHistory(booking['id']),
-                  child: const Text("Save"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  child: Text(
+                    "Save",
+                    style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ],
             ),
@@ -411,72 +496,95 @@ class _AssignedPatientDetailsState extends State<AssignedPatientDetails> {
     }
 
     return Container(
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+        gradient: LinearGradient(
+          colors: [Colors.purple.shade100, Colors.purple.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow("Pregnancy History", latestHealth?.history ?? 'N/A', Icons.history, Colors.grey.shade600),
-            _buildDetailRow("Known Conditions", latestHealth?.conditions ?? 'N/A', Icons.health_and_safety, Colors.orange.shade400),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: Icon(Icons.edit, color: Colors.purple.shade700),
-                onPressed: () => setState(() => isEditingHistory = true),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetailRow(
+                "Pregnancy History",
+                latestDetails?.history ?? 'N/A',
+                Icons.history,
+                Colors.purple.shade600,
               ),
+              const SizedBox(height: 16),
+              _buildDetailRow(
+                "Known Conditions",
+                latestDetails?.conditions ?? 'N/A',
+                Icons.health_and_safety,
+                Colors.purple.shade600,
+              ),
+            ],
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: FloatingActionButton(
+              onPressed: () => setState(() => isEditingHistory = true),
+              mini: true,
+              backgroundColor: Colors.purple.shade700,
+              child: const Icon(Icons.edit, color: Colors.white, size: 20),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildDetailRow(String title, String value, IconData icon, Color iconColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 22, color: iconColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Text(
-                    title,
-                    style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.purple.shade300, Colors.purple.shade500],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    value,
-                    style: GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade700),
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-              ],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 24, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: GoogleFonts.nunito(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.purple.shade800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.only(left: 44), // Align with icon
+          child: Text(
+            value,
+            style: GoogleFonts.nunito(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey.shade800,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
-
-  
 }

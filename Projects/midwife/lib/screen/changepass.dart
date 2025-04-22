@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:midwife/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:user/main.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -55,8 +55,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         ),
       );
 
-      await supabase.from('tbl_user').update({
-        'user_pass': _newPasswordController.text,
+      await supabase.from('tbl_midwife').update({
+        'midwife_pass': _newPasswordController.text,
       }).eq('id', supabase.auth.currentUser!.id);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,35 +94,26 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.pink.shade50,
+      backgroundColor: Colors.white, // Match MidwifeAccount background
       appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.pink.shade200, Colors.purple.shade200],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        backgroundColor: Colors.purple.shade700, // Match MidwifeAccount AppBar
         elevation: 0,
         title: Text(
           'Change Password',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
+          style: GoogleFonts.nunito(
+            fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.pink.shade400),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.all(24), // Match MidwifeAccount padding
           child: Form(
             key: _formKey,
             child: Column(
@@ -133,23 +124,23 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.purple.shade300.withOpacity(0.2),
+                      color: Colors.purple.shade100.withOpacity(0.9), // Match MidwifeAccount CircleAvatar
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.lock,
                       size: 50,
-                      color: Colors.purple.shade300,
+                      color: Colors.purple.shade700, // Match MidwifeAccount theme
                     ),
                   ),
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: 24),
                 Text(
                   'Security',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.nunito(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.purple.shade800,
+                    color: Colors.purple.shade700, // Match MidwifeAccount header
                   ),
                 ),
                 SizedBox(height: 16),
@@ -210,17 +201,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 40),
+                SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
                     onPressed: isLoading ? null : _changePassword,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple.shade300,
+                      backgroundColor: Colors.purple.shade700, // Match MidwifeAccount button
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8), // Match MidwifeAccount button
                       ),
                       elevation: 0,
                     ),
@@ -235,33 +226,37 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           )
                         : Text(
                             'Change Password',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.nunito(
                               fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
                           ),
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 24),
                 Container(
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.purple.shade50,
+                    color: Colors.purple.shade100.withOpacity(0.9), // Match MidwifeAccount subtle purple
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.purple.shade200),
+                    border: Border.all(color: Colors.purple.shade700), // Match MidwifeAccount theme
+                    boxShadow: [
+                      BoxShadow(color: Colors.black26, blurRadius: 10), // Match MidwifeAccount shadow
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.info_outline, color: Colors.purple.shade800),
+                          Icon(Icons.info_outline, color: Colors.purple.shade700),
                           SizedBox(width: 8),
                           Text(
                             'Password Tips',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.nunito(
                               fontWeight: FontWeight.bold,
-                              color: Colors.purple.shade800,
+                              color: Colors.purple.shade700,
                             ),
                           ),
                         ],
@@ -269,8 +264,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       SizedBox(height: 8),
                       Text(
                         '• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid using personal information',
-                        style: GoogleFonts.poppins(
-                          color: Colors.purple.shade800,
+                        style: GoogleFonts.nunito(
+                          color: Colors.grey.shade700, // Match MidwifeAccount secondary text
                           height: 1.5,
                         ),
                       ),
@@ -294,41 +289,52 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     String? Function(String?)? validator,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextFormField(
-        controller: controller,
-        obscureText: obscureText,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: GoogleFonts.poppins(
-            color: Colors.grey.shade700,
-          ),
-          prefixIcon: Icon(icon, color: Colors.purple.shade300),
-          suffixIcon: IconButton(
-            icon: Icon(
-              obscureText ? Icons.visibility_off : Icons.visibility,
-              color: Colors.purple.shade300,
-            ),
-            onPressed: onToggle,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.purple.shade300),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(color: Colors.black26, blurRadius: 10), // Match MidwifeAccount shadow
+          ],
         ),
-        style: GoogleFonts.poppins(),
-        validator: validator,
+        child: TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: GoogleFonts.nunito(
+              color: Colors.grey.shade700, // Match MidwifeAccount secondary text
+            ),
+            prefixIcon: Icon(icon, color: Colors.purple.shade700), // Match MidwifeAccount theme
+            suffixIcon: IconButton(
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: Colors.purple.shade700, // Match MidwifeAccount theme
+              ),
+              onPressed: onToggle,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none, // No border to match MidwifeAccount style
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.purple.shade700, width: 2), // Match MidwifeAccount theme
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          ),
+          style: GoogleFonts.nunito(
+            color: Colors.grey.shade700, // Match MidwifeAccount text
+          ),
+          validator: validator,
+        ),
       ),
     );
   }

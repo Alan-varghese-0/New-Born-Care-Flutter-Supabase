@@ -6,6 +6,7 @@ import 'package:midwife/screen/appointments.dart';
 import 'package:midwife/screen/my_account.dart';
 import 'package:midwife/screen/my_history.dart';
 import 'package:midwife/screen/my_patients.dart';
+import 'package:midwife/screen/login.dart'; // Added import for Login screen
 
 // Upcoming Appointments Card
 class UpcomingAppointmentsCard extends StatefulWidget {
@@ -88,7 +89,7 @@ class _UpcomingAppointmentsCardState extends State<UpcomingAppointmentsCard> {
                             ),
                           );
                         }).toList(),
-                      )
+                      ),
           ],
         ),
       ),
@@ -153,6 +154,21 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error loading patient data: $e")),
+      );
+    }
+  }
+
+  // Logout function
+  Future<void> logout() async {
+    try {
+      await supabase.auth.signOut();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MidwifeLogin()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error logging out: $e")),
       );
     }
   }
@@ -298,7 +314,6 @@ class _HomeScreenState extends State<HomeScreen> {
               Colors.purple.shade600,
               MidwifeAppointmentsScreen(userId: selectedUserId ?? ''),
             ),
-           
             _buildQuickAction(
               "History",
               Icons.history,
@@ -387,6 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _buildDrawerItem(context, Icons.person, "My Profile", const MidwifeAccount()),
                 _buildDrawerItem(context, Icons.people, "My Patients", const AssignedPatientDetails()),
+                _buildDrawerItem(context, Icons.logout, "Log Out", logout),
               ],
             ),
           ),
@@ -395,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, Widget screen) {
+  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, dynamic action) {
     return ListTile(
       leading: Icon(icon, color: Colors.purple.shade700),
       title: Text(
@@ -407,10 +423,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => screen),
-        );
+        if (action is Widget) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => action),
+          );
+        } else if (action is Function) {
+          action();
+        }
       },
     );
   }

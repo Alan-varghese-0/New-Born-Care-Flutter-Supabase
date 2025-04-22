@@ -11,7 +11,7 @@ class Midwife {
   final String bio;
   final String contact;
   final String photo;
-  final int status;      // Added midwife_status
+  final int status; // Added midwife_status
   final int availability; // midwife_available
 
   Midwife({
@@ -45,7 +45,7 @@ class _MidwifeListScreenState extends State<MidwifeListScreen> {
           .from("tbl_midwife")
           .select()
           .eq("midwife_status", 1); // Filter for active midwives only
-      
+
       print("Midwives data fetched: $response");
 
       setState(() {
@@ -225,6 +225,8 @@ class MidwifeCard extends StatelessWidget {
                 "About: ${midwife.bio}",
                 style: GoogleFonts.nunito(
                     fontSize: 16, color: Colors.grey.shade600),
+                maxLines: 2, // Limit to 2 lines
+                overflow: TextOverflow.ellipsis, // Show ellipsis if text overflows
               ),
               Text(
                 "Contact: ${midwife.contact}",
@@ -330,6 +332,8 @@ class MidwifeDetailsDialog extends StatelessWidget {
               "About: ${midwife.bio}",
               style:
                   GoogleFonts.nunito(fontSize: 16, color: Colors.grey.shade600),
+              maxLines: 2, // Limit to 2 lines
+              overflow: TextOverflow.ellipsis, // Show ellipsis if text overflows
             ),
             const SizedBox(height: 8),
             Text(

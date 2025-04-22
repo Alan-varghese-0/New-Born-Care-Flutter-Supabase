@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:midwife/main.dart';
+import 'package:midwife/screen/changepass.dart';
 import 'package:midwife/screen/dashboard.dart';
+import 'package:midwife/screen/editprofile.dart';
+import 'package:midwife/screen/login.dart';
 
 class MidwifeAccount extends StatefulWidget {
   const MidwifeAccount({super.key});
@@ -61,21 +64,19 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
             color: Colors.white,
           ),
         ),
-        actions: [
+         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            tooltip: 'Log out',
+            icon: const Icon(Icons.login_outlined,color: Colors.white,),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    "Logged out successfully",
-                    style: GoogleFonts.nunito(color: Colors.white),
-                  ),
-                  backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              supabase.auth.signOut().then((value) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => MidwifeLogin()),
+                  (route) => false,
+                );
+              }).catchError((error) {
+                print("Error signing out: $error");
+              });
             },
           ),
         ],
@@ -141,16 +142,7 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Edit Profile feature coming soon!",
-                                  style: GoogleFonts.nunito(color: Colors.white),
-                                ),
-                                backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfile()));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
@@ -165,16 +157,7 @@ class _MidwifeAccountState extends State<MidwifeAccount> {
                         const SizedBox(width: 16),
                         ElevatedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Change Password feature coming soon!",
-                                  style: GoogleFonts.nunito(color: Colors.white),
-                                ),
-                                backgroundColor: Colors.purple.shade700, // Match MidwifeLogin button
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangePasswordPage()));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.purple.shade200, // Lighter purple for secondary action

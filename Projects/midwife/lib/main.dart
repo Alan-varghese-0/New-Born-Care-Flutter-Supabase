@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:midwife/screen/dashboard.dart';
 import 'package:midwife/screen/login.dart';
 
 
@@ -23,7 +24,24 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       
-      home: MidwifeLogin(),
+      home: AuthWrapper(),
     );
+  }
+}
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Check if the user is already logged in
+    final session = supabase.auth.currentSession;
+
+    if (session != null) {
+      // User is logged in, navigate to HomePage
+      return HomeScreen();
+    } else {
+      // User is not logged in, navigate to LandingPage
+      return MidwifeLogin();
+    }
   }
 }
