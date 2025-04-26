@@ -12,6 +12,7 @@ Future<void> main() async {
   runApp(MainApp());
 }
 
+
 final supabase = Supabase.instance.client;
 
 class MainApp extends StatelessWidget {
